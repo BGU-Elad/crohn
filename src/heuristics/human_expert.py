@@ -52,12 +52,17 @@ class HumanExpert:
 
         user_recommendations = {}
         for user_id, improvement in improvement_per_user.items():
-            is_legal, consecutive_days = self.check_legality(user_id, improvement, user_recommendations)
+            is_legal, consecutive_days, last_activity = self.check_legality(user_id, improvement, user_recommendations)
+            improvement["count"] = len(improvement["user_sessions"])
             # if not is_legal: continue
 
             if improvement["count"] < 7:
-                user_recommendations[user_id] = ([], NO_RECOMMENDATION_TEXT)
-                continue
+                if last_activity is None or last_activity>7:
+                    user_recommendations[user_id] = ([], AT_LEAST_TWICE_A_DAY_MESSAGE)
+                    continue
+                else:
+                    user_recommendations[user_id] = ([], NO_RECOMMENDATION_TEXT)
+                    continue
 
             if improvement["count"] == 7 or consecutive_days == 7:
                 if not is_legal:
@@ -80,13 +85,14 @@ class HumanExpert:
     def check_legality(user_id, improvement, user_recommendations):
         prev_session = None
         index = -1
+        last_session = None
         for index, session in enumerate(reversed(improvement["user_sessions"])):
-            if session.count() < 2 or (
-                    prev_session is not None and session.date - prev_session.date > timedelta(days=1)):
+            if index ==0: last_session = (datetime.now().date() - session.date).days
+            if session.count() < 2 or (prev_session is not None and session.date - prev_session.date > timedelta(days=1)):
                 user_recommendations[user_id] = (NO_RECOMMENDATION, AT_LEAST_TWICE_A_DAY_MESSAGE)
-                return False, index
+                return False, index, last_session
             prev_session = session
-        return True, index
+        return True, index, last_session
 
     def get_doing(self, userid, date):
         doing_cur = self.conn.cur.execute(EXERCISES_IN_PROGRESS_QUERY.format(userid=userid, date=date))
