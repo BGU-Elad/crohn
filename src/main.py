@@ -1,8 +1,8 @@
-from src.heuristics.human_expert import HumanExpert
+from src.heuristics.human_expert_v3 import HumanExpert
 from src.db_handler.xl_database import ExcelSQL
 
 # Connect to SQLite database
-exec_sql = ExcelSQL(['../sensitive_data/data.xlsx', '../sensitive_data/checkWork - 25.06.23.xlsx'])
+exec_sql = ExcelSQL(['../sensitive_data/data (32).xlsx', '../sensitive_data/checkWork -26.8.2024.xlsx', "../sensitive_data/acount and passwords.xlsx", "../sensitive_data/messages.xlsx"])
 exec_sql.create_table()
 # get_tables = exec_sql.get_tables()
 # print(get_tables)
@@ -12,4 +12,5 @@ exec_sql.create_table()
 
 he = HumanExpert(exec_sql)
 recommendations = he.recommend()
+
 print(recommendations)

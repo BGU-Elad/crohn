@@ -12,6 +12,12 @@ USER_LEVEL_QUERY = """
    FROM PositionLevel
 """
 
+USER_TIME_QUERY = """
+   SELECT id, morningPreferTime, eveningPreferTime
+   FROM App_user
+"""
+
+
 NON_IMPROVED_QUERY = """
             SELECT submain.userID as id, count(DISTINCT submain.sessionId) as count, sub.endSession as endSession, json_group_array(submain.endSession) as sessions, json_group_array(submain.typeSession) as session_type, json_group_array(DISTINCT excercise.actionId) as actions
             From
@@ -63,4 +69,6 @@ TRAINING_DATA_QUERY = """
            WHERE CAST(a.'מספר סידורי' AS REAL) < {free_user_level} {where}
            GROUP BY s.userId, a.'מספר סידורי', s.sessionId
         """
+
+
 
