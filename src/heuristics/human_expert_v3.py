@@ -815,8 +815,8 @@ class HumanExpert:
 
     def get_messages(self):
 
-        exercise_priority_message = [-1]+ [63, 24, 25, 26, 27, 76] +list(range(12,24)) + [66,67,68,69,70,71,72,73,74] + list(range(1, 11)) + list(range(28,66))
-        exercise_message_interval =({i: 2 for i in [63, 24, 25, 26, 27, 76] +list(range(12,24)) + [66,67,68,69,70,71,72,73,74] + list(range(1, 11))} | {8:4, 9:4} |
+        exercise_priority_message = [-1]+ [63, 24, 25, 26, 27, 76] +list(range(12,24)) + [66,67,68,69,70,71,72,73,74, 75] + list(range(1, 11)) + list(range(28,66))
+        exercise_message_interval =({i: 2 for i in [63, 24, 25, 26, 27, 76] +list(range(12,24)) + [66,67,68,69,70,71,72,73,74, 75] + list(range(1, 11))} | {8:4, 9:4} |
                                     {i: 2 for i in range(28,47)}) | {47:7, 48:7, 49: 4*7} | {i: 6 for i in range(50, 66)} | {-1:0} | {31:1000, 32: 1000}
 
 
