@@ -426,7 +426,7 @@ class HumanExpert:
                 "002C": second3_carusal.get(user, []),
                 "003": third_carusal.get(user, []),
                 "004": fourth_carusal.get(user, []),
-                "message": messages.get(user, "")
+                "message": (messages.get(user, [""])[0], message_indexes.get(user, [-1])[0])
             }
         return user_to_recommendation
 
