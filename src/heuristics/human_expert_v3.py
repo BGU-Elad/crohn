@@ -407,6 +407,12 @@ class HumanExpert:
             exercise_for_user[user[0]] = sorted_exercises
         return exercise_for_user
 
+
+    def get_first_or_empty(self, lst):
+        if lst is None or len(lst) == 0:
+            return ['']
+        return lst[0]
+
     def recommend(self, time: Optional[int] = 0):
         assert time in [0,1], "time 0 is morning and time 1 is evening"
         first_carusal = self.first_carusal(time)
@@ -426,9 +432,13 @@ class HumanExpert:
                 "002C": second3_carusal.get(user, []),
                 "003": third_carusal.get(user, []),
                 "004": fourth_carusal.get(user, []),
-                "message": (messages.get(user, [""])[0], message_indexes.get(user, [-1])[0])
+                "message": (
+                    self.get_first_or_empty(messages.get(user, [""])),
+                    self.get_first_or_empty(message_indexes.get(user, [-1]))
+                )
             }
         return user_to_recommendation
+
 
     def id_to_message(self, id, m_or_f):
         query = f"""
@@ -821,25 +831,29 @@ class HumanExpert:
 
 
         uesr_to_message = {}
-
+        users_gender = {}
         users = self.get_users()
         for user in users:
             user = user[0]
             real_user = self.is_real_user(user)
-            if not real_user:
-                continue
+
             uesr_to_message[user] = []
+
+            if not real_user:
+                uesr_to_message[user].append(-1)
+                continue
             user_sex = self.get_user_sex(user)
+            users_gender[user] = user_sex
 
             last_exercise_time = self.get_last_exercise_date(user)
             if last_exercise_time == None:
-                print(user, "bad: no exercise")
+                # print(user, "bad: no exercise")
                 uesr_to_message[user].append(-1)
                 continue
 
             trend, within_or_between, cs = self.get_trend(user)
             if trend == MISC:
-                print(user, "bad: no valid trend")
+                # print(user, "bad: no valid trend")
                 uesr_to_message[user].append(-1)
                 continue
 
@@ -847,11 +861,9 @@ class HumanExpert:
 
             p_value = current_t if current_t < 5 else 4
             if p_value == 0:
-                print(user, "bad: no T value")
+                # print(user, "bad: no T value")
                 uesr_to_message[user].append(-1)
                 continue
-
-
 
             should_be_unit = self.get_should_be_unit(user)
             current_unit = self.get_current_unit(user)
@@ -1048,7 +1060,7 @@ class HumanExpert:
             #         exercises.append(e)
             # uesr_to_message[user] = exercises
             indexes = sorted(uesr_to_message[user], key=lambda x: exercise_priority_message.index(x))
-            uesr_to_message[user] = [self.id_to_message(id_, user_sex) for id_ in indexes]
+            uesr_to_message[user] = [self.id_to_message(id_, users_gender.get(user, "M")) for id_ in indexes]
             user_indexes[user] = indexes
         return uesr_to_message, user_indexes
 
