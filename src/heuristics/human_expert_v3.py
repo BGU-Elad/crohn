@@ -11,7 +11,7 @@ from src.utils.session_object import Session
 import numpy as np
 from scipy.stats import linregress
 
-
+BIG_DAYS = 10_000
 FREE_USER_LEVEL = 5
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 NOW= "now" #"2023-07-13 14:39:58" #
@@ -805,10 +805,12 @@ class HumanExpert:
 
     def get_last_time_message(self, user, e):
         query = f"""
-        SELECT date FROM History_bots WHERE userId = {user} AND messageId = {e} ORDER BY date DESC LIMIT 1
+        SELECT date FROM History_bots WHERE userId = {user} AND rule = {e} ORDER BY date DESC LIMIT 1
         """
         self.conn.cur.execute(query)
         last_time = self.conn.cur.fetchone()
+        if last_time == None:
+            return BIG_DAYS
         last_time = datetime.strptime(last_time[0], DATE_FORMAT)
         return (datetime.now() - last_time).days
 
@@ -1053,12 +1055,12 @@ class HumanExpert:
 
         user_indexes = {}
         for user in uesr_to_message:
-            # exercises = []
-            # for e in uesr_to_message[user]:
-            #     last = self.get_last_time_message(user, e)
-            #     if last > exercise_message_interval[e]:
-            #         exercises.append(e)
-            # uesr_to_message[user] = exercises
+            exercises = []
+            for e in uesr_to_message[user]:
+                last = self.get_last_time_message(user, e)
+                if last > exercise_message_interval[e]:
+                    exercises.append(e)
+            uesr_to_message[user] = exercises
             indexes = sorted(uesr_to_message[user], key=lambda x: exercise_priority_message.index(x))
             uesr_to_message[user] = [self.id_to_message(id_, users_gender.get(user, "M")) for id_ in indexes]
             user_indexes[user] = indexes
