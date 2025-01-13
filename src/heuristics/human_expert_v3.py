@@ -148,7 +148,7 @@ class HumanExpert:
             max_fatigue = fat_scores[fat_max_index]
 
             vas_scores = [self.score_pair_to_CS(vas1[i], vas2[i]) for i in range(len(vas1))]
-            relative_deltas_vas = [(vas1[i] - vas2[i])/vas1[i] for i in range(len(vas1))]
+            relative_deltas_vas = [(vas1[i] - vas2[i])/(vas1[i]+1) for i in range(len(vas1))]
             relative_deltas_vas = np.array(relative_deltas_vas)
             vas_max_index = np.argmax(vas_scores)
             max_vas = vas_scores[vas_max_index]
@@ -196,7 +196,12 @@ class HumanExpert:
         exercise_for_user = {}
         for user in users:
             user_hour = user_time[user[0]]
-            exercise_of_user = self.get_exercise_of_user(user_id=user[0], time=time, user_hour=user_hour)
+            current_t,_,_ = self.get_current_t(user[0])
+            if current_t >= 2:
+                exercise_of_user = self.get_exercise_of_user(user_id=user[0], time=time, user_hour=user_hour)
+            else:
+                exercise_of_user = []
+
             df = pd.DataFrame(exercise_of_user).T
             sorted_exercises = []
             if len(df) > 0:
@@ -283,7 +288,12 @@ class HumanExpert:
         users = [user for user in users if int(user[1]) >= FREE_USER_LEVEL]
         exercise_for_user = {}
         for user in users:
-            exercise_of_user = self.get_exercise_for_metric_of_user(user_id=user[0], metric=metric, metric_percent=metric_percent, other_percent=other_percent)
+            current_t, _, _ = self.get_current_t(user[0])
+            if current_t >= 2:
+                exercise_of_user = self.get_exercise_for_metric_of_user(user_id=user[0], metric=metric, metric_percent=metric_percent, other_percent=other_percent)
+            else:
+                exercise_of_user = []
+
             df = pd.DataFrame(exercise_of_user).T
             sorted_exercises = []
             if len(df) > 0:
@@ -338,7 +348,12 @@ class HumanExpert:
         users = [user for user in users if int(user[1]) >= FREE_USER_LEVEL]
         exercise_for_user = {}
         for user in users:
-            exercise_of_user = self.get_forgoten_exercise_of_user(user_id=user[0], days=days, min_percent=min_percent)
+            current_t, _, _ = self.get_current_t(user[0])
+            if current_t >= 2:
+                exercise_of_user = self.get_forgoten_exercise_of_user(user_id=user[0], days=days, min_percent=min_percent)
+            else:
+                exercise_of_user = []
+
             df = pd.DataFrame(exercise_of_user).T
             sorted_exercises = []
             if len(df) > 0:
@@ -354,11 +369,24 @@ class HumanExpert:
                     SELECT a.'מספר הפעולה' AS action, a.'מספר טכניקה' AS technique FROM actions AS a WHERE a.'סוג פעולה' = 'G'
                 ),
                 exercised_in_the_pas_k_days AS (
-                    SELECT actionId FROM Exercise WHERE userId = {user_id} AND dateStart > date('now', '-{days} days') 
+                    SELECT actionId, a.'מספר טכניקה' as technique, SUBSTR(a.'מספר סידורי'
+                      , 1, INSTR(a.'מספר סידורי'
+                      , ".") +INSTR(SUBSTR(a.'מספר סידורי'
+                      , INSTR(a.'מספר סידורי'
+                      , ".")+1), ".")) AS parent_serial
+                    FROM Exercise JOIN actions as a ON actionId = a.'מספר הפעולה'  WHERE userId = {user_id} 
+                    AND dateStart > date('now', '-{days} days')
+                    AND a.'סוג פעולה' != 'T' 
+                    AND a.'סוג פעולה' != 'G' 
+                ),
+                tutrial_of_exercised AS (
+                    SELECT  a.'מספר הפעולה' as action
+                    FROM actions AS a, exercised_in_the_pas_k_days as e
+                    WHERE e.parent_serial = a.'מספר סידורי'                    
                 ),
                 not_exercised AS (
-                    SELECT action, technique FROM actions JOIN tutorial_actions ON actions.'מספר הפעולה' = tutorial_actions.action
-                    WHERE action NOT IN exercised_in_the_pas_k_days
+                    SELECT ta.action, ta.technique FROM tutorial_actions as ta
+                    WHERE ta.action NOT IN tutrial_of_exercised
                 ),
                 exersice_to_scores AS (
                     SELECT e.userId, e.actionId, q1.suds_stress as sudsQ1, q2.suds_stress as sudsQ2, q1.fatigue AS fatigueQ1, q2.fatigue AS fatigueQ2, q1.vas_pain AS vasQ1, q2.vas_pain AS vasQ2 
@@ -366,14 +394,17 @@ class HumanExpert:
                     WHERE e.questionnaireLastId != 0 
                     AND e.questionnairePrimerId = q1.questionnaireId
                     AND e.questionnaireLastId = q2.questionnaireId
-                    AND q1.userId = {user_id}
+                    AND q1.userId = {user_id} 
+--                     AND e.dateStart > date('now', '-{days} days')
                 ),
                 deteriorations AS (
-                    SELECT  e.actionId, t.technique
+                    SELECT  e.actionId,
+--                     t.technique as technique
+                       t.'מספר טכניקה' as technique
                      FROM exersice_to_scores AS e
-                     JOIN actions as a on e.actionId = a.'מספר הפעולה'
-                     JOIN tutorial_actions as t on a.'מספר הפעולה' = t.action
-                     WHERE e.userId = {user_id}
+--                      JOIN exercised_in_the_pas_k_days as t on e.actionId= t.actionId
+                     JOIN actions as t on e.actionId= t.'מספר הפעולה'
+                     WHERE e.userId = {user_id}  
                      GROUP BY e.actionId
                      HAVING 
                          AVG(e.sudsQ1 > e.sudsQ2) < {deterior} AND 
@@ -385,6 +416,7 @@ class HumanExpert:
         """
         self.conn.cur.execute(query)
         exercises = self.conn.cur.fetchall()
+        # print(len(exercises))
         exercises = [e for e in exercises]
         exercises_dict = {}
         for exercise in exercises:
@@ -398,7 +430,12 @@ class HumanExpert:
         users = [user for user in users if int(user[1]) >= FREE_USER_LEVEL]
         exercise_for_user = {}
         for user in users:
-            exercise_of_user = self.get_fourth_carusal_exercise_of_user(user_id=user[0])
+            current_t, _, _ = self.get_current_t(user[0])
+            if current_t >= 2:
+                exercise_of_user = self.get_fourth_carusal_exercise_of_user(user_id=user[0])
+            else:
+                exercise_of_user = []
+
             df = pd.DataFrame(exercise_of_user).T
             sorted_exercises = []
             if len(df) > 0:
@@ -415,7 +452,8 @@ class HumanExpert:
 
     def recommend(self, time: Optional[int] = 0):
         assert time in [0,1], "time 0 is morning and time 1 is evening"
-        first_carusal = self.first_carusal(time)
+        first_carusal = self.first_carusal(MORNING)
+        first2_carusal = self.first_carusal(EVENING)
         second1_carusal = self.second_carusal(SUDS)
         second2_carusal = self.second_carusal(FATIGUE)
         second3_carusal = self.second_carusal(VAS)
@@ -426,7 +464,8 @@ class HumanExpert:
         all_users = set(first_carusal.keys()).union(second1_carusal.keys()).union(second2_carusal.keys()).union(second3_carusal.keys()).union(third_carusal.keys()).union(fourth_carusal.keys())
         for user in all_users:
             user_to_recommendation[user] = {
-                "001A" if time == MORNING else "001B": first_carusal.get(user, []),
+                "001A": first_carusal.get(user, []),
+                "001B": first2_carusal.get(user, []),
                 "002A": second1_carusal.get(user, []),
                 "002B": second2_carusal.get(user, []),
                 "002C": second3_carusal.get(user, []),
@@ -506,7 +545,7 @@ class HumanExpert:
         for t_i, t in enumerate(current_t):
             if t > now:
                 break
-        return t_i+1, (t - now).days, [(t - now).days for t in current_t]
+        return t_i, (t - now).days, [(t - now).days for t in current_t]
 
     def get_current_unit(self, user):
         query = f"""
@@ -948,9 +987,9 @@ class HumanExpert:
                     uesr_to_message[user].append(23)
                 if x_sessions_back_with_y_session_where_after_is_higher_than_before_in_z_scales:
                     uesr_to_message[user].append(76)
-                if min_n_days_for_unit > number_of_days_in_unit[1] and  current_unit in [1,2,3]:
+                if min_n_days_for_unit > number_of_days_in_unit and  current_unit in [1,2,3]:
                     uesr_to_message[user].append(24)
-                if min_n_days_for_unit > number_of_days_in_unit[1] and current_unit in [4]:
+                if min_n_days_for_unit > number_of_days_in_unit and current_unit in [4]:
                     uesr_to_message[user].append(25)
                 if current_unit == 5:
                     uesr_to_message[user].append(26)
