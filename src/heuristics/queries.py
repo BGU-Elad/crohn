@@ -1,4 +1,4 @@
-from src.utils.constants import START_LEVEL_DEFAULT, MINUS_TIME
+from src.utils.constants import START_LEVEL_DEFAULT
 
 USER_LEVEL_QUERY = """
    SELECT userId as id, levelId as level
@@ -14,7 +14,7 @@ USER_TIME_QUERY = """
 LEVEL_OF_CURRENT_EXERCISE_QUERY = f"""
 SELECT DISTINCT level_techniquesList.'שלב ' FROM Exercise JOIN actions ON Exercise.actionId = actions.'מספר הפעולה' JOIN
  level_techniquesList ON actions.'מספר טכניקה' = level_techniquesList.'טכניקה' WHERE Exercise.userId = {{user_id}} AND
- Exercise.dateStart > date(date('now', '-{MINUS_TIME} days'), '-{{days}} days')
+ Exercise.dateStart > date(date('now', '-{{minus_time}} days'), '-{{days}} days')
 """
 
 EXERCISES_OF_USER_QUERY = """
@@ -66,7 +66,7 @@ FORGOTTEN_EXERCISES_OF_USER_QUERY = f"""
      WITH 
      last_k_days AS (
      SELECT actionId FROM Exercise WHERE userId = {{user_id}}
-     AND dateStart > date(date('now', '-{MINUS_TIME} days'), '-{{days}} days') 
+     AND dateStart > date(date('now', '-{{minus_time}} days'), '-{{days}} days') 
      ),
      exersice_to_scores AS (
      SELECT e.userId, e.actionId, q1.suds_stress as sudsQ1, q2.suds_stress as sudsQ2, q1.fatigue AS fatigueQ1,
@@ -102,7 +102,7 @@ WITH
           , INSTR(a.'מספר סידורי'
           , ".")+1), ".")) AS parent_serial
         FROM Exercise JOIN actions as a ON actionId = a.'מספר הפעולה'  WHERE userId = {{user_id}} 
-        AND dateStart > date(date('now', '-{MINUS_TIME} days'), '-{{days}} days')
+        AND dateStart > date(date('now', '-{{minus_time}} days'), '-{{days}} days')
         AND a.'סוג פעולה' != 'T' 
         AND a.'סוג פעולה' != 'G' 
     ),
@@ -123,7 +123,7 @@ WITH
         AND e.questionnairePrimerId = q1.questionnaireId
         AND e.questionnaireLastId = q2.questionnaireId
         AND q1.userId = {{user_id}} 
---                     AND e.dateStart > date(date('now', '-{MINUS_TIME} days'), '-{{days}} days')
+--                     AND e.dateStart > date(date('now', '-{{minus_time}} days'), '-{{days}} days')
     ),
     deteriorations AS (
         SELECT  e.actionId,
@@ -186,7 +186,7 @@ TRENDS_QUERY = """
 
 GET_N_EXERCISES_IN_PAST_X_DAYS = f"""
     SELECT COUNT(distinct actionId) FROM Exercise WHERE userId = {{user}}
-    AND dateStart > date(date('now', '-{MINUS_TIME} days'), '-{{days}} days')
+    AND dateStart > date(date('now', '-{{minus_time}} days'), '-{{days}} days')
 """
 
 GET_N_DIFFERENT_EXERCISES_PER_X_SAMPLES = """
@@ -195,7 +195,7 @@ GET_N_DIFFERENT_EXERCISES_PER_X_SAMPLES = """
 
 N_SESSIONS_PER_X_DAYS_THAT_DO_NOT_HAVE_AN_AFTER_AND_DONE_SESSION = f"""
 SELECT endSession Is NULL FROM Session WHERE userId = {{user}}
-AND startSession > date(date('now', '-{MINUS_TIME} days'), '-{{days}} days')
+AND startSession > date(date('now', '-{{minus_time}} days'), '-{{days}} days')
 """
 
 X_SESSIONS_BACK_WITH_Y_SESSIONS_WHERE_AFTER_IS_HIGHER_THAN_BEFORE_IN_Z_SCALES_QUERY = """

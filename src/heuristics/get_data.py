@@ -7,7 +7,7 @@ from scipy.stats import linregress
 
 from src.heuristics.orderings import score_pair_to_CS, technique_order, score_to_CS
 from src.heuristics.queries import *
-from src.utils.constants import FATIGUE, SUDS, VAS, DATE_FORMAT, BIG_DAYS, STAG, DET, MISC, INC
+from src.utils.constants import FATIGUE, SUDS, VAS, DATE_FORMAT, BIG_DAYS, STAG, DET, MISC, INC, MINUS_TIME
 
 from src.utils.utils import ExerciseData, calc_relative_delta, get_now
 
@@ -37,8 +37,8 @@ def get_users_time(conn):
     return user_time_map
 
 
-def get_level_of_current_exercise(conn, user_id: int, days: int = 14):
-    query = LEVEL_OF_CURRENT_EXERCISE_QUERY.format(user_id=user_id, days=days)
+def get_level_of_current_exercise(conn, user_id: int, days: int = 14, minus_time = MINUS_TIME):
+    query = LEVEL_OF_CURRENT_EXERCISE_QUERY.format(user_id=user_id, days=days, minus_time=minus_time)
     conn.cur.execute(query)
     levels = conn.cur.fetchall()
     return [level[0] for level in levels]
@@ -53,8 +53,8 @@ def calculate_scores_and_deltas(scores1, scores2):
     return scores, relative_deltas, max_index, max_score
 
 
-def get_exercise_of_user(conn, user_id: int, time: int, user_hour: str, min_percent: float = 0.8):
-    levels = get_level_of_current_exercise(conn, user_id)
+def get_exercise_of_user(conn, user_id: int, time: int, user_hour: str, min_percent: float = 0.8, minus_time=MINUS_TIME):
+    levels = get_level_of_current_exercise(conn, user_id, minus_time=minus_time)
     time_direction = "<" if time == 0 else ">"
     query = EXERCISES_OF_USER_QUERY.format(user_id=user_id, time_direction=time_direction, user_hour=user_hour,
                                            min_percent=min_percent)
@@ -97,8 +97,8 @@ def get_exercise_of_user(conn, user_id: int, time: int, user_hour: str, min_perc
 
 
 def get_exercise_for_metric_of_user(conn, user_id: int, metric: int, metric_percent: int = 0.80,
-                                    other_percent: int = 0.40):
-    levels = get_level_of_current_exercise(conn, user_id)
+                                    other_percent: int = 0.40, minus_time=MINUS_TIME):
+    levels = get_level_of_current_exercise(conn, user_id, minus_time=minus_time)
     suds_percent = fatigue_percent = vas_percent = other_percent
     before = after = ""
     if metric == SUDS:
@@ -140,8 +140,8 @@ def get_exercise_for_metric_of_user(conn, user_id: int, metric: int, metric_perc
     return exercises_dict
 
 
-def get_forgotten_exercise_of_user(conn, user_id: int, days: int = 30, min_percent: float = 0.8):
-    query = FORGOTTEN_EXERCISES_OF_USER_QUERY.format(user_id=user_id, days=days, min_percent=min_percent)
+def get_forgotten_exercise_of_user(conn, user_id: int, days: int = 30, min_percent: float = 0.8, minus_time=MINUS_TIME):
+    query = FORGOTTEN_EXERCISES_OF_USER_QUERY.format(user_id=user_id, days=days, min_percent=min_percent, minus_time=minus_time)
     conn.cur.execute(query)
     exercises = conn.cur.fetchall()
     exercises = [e for e in exercises]
@@ -154,8 +154,8 @@ def get_forgotten_exercise_of_user(conn, user_id: int, days: int = 30, min_perce
     return exercises_dict
 
 
-def get_fourth_carousal_exercise_of_user(conn, user_id, days=60, deteriorate=0.5):
-    query = FOURTH_CARUSAL_EXERCISE_OF_USER_QUERY.format(user_id=user_id, days=days, deterior=deteriorate)
+def get_fourth_carousal_exercise_of_user(conn, user_id, days=60, deteriorate=0.5, minus_time=MINUS_TIME):
+    query = FOURTH_CARUSAL_EXERCISE_OF_USER_QUERY.format(user_id=user_id, days=days, deterior=deteriorate, minus_time=minus_time)
     conn.cur.execute(query)
     exercises = conn.cur.fetchall()
     exercises = [e for e in exercises]
@@ -189,7 +189,7 @@ def get_user_sex(conn, user):
     return sex[0] if type(sex) is tuple else sex
 
 
-def get_should_be_unit(conn, user):
+def get_should_be_unit(conn, user, minus_time = MINUS_TIME):
     query = SHOULD_BE_UNIT_QUERY.format(user=user)
     conn.cur.execute(query)
     start_date = conn.cur.fetchone()
@@ -198,7 +198,7 @@ def get_should_be_unit(conn, user):
     query = LEVEL_DAYS_QUERY
     conn.cur.execute(query)
     level_days = conn.cur.fetchall()
-    now_time = get_now()
+    now_time = get_now(minus_time)
     start_date = datetime.strptime(start_date[0], DATE_FORMAT)
     level = -1
     for level, days in level_days:
@@ -210,16 +210,16 @@ def get_should_be_unit(conn, user):
     # return should_be_unit[0] if type(should_be_unit) == tuple else should_be_unit
 
 
-def get_current_t(conn, user):
+def get_current_t(conn, user, minus_time = MINUS_TIME):
     query = CURRENT_T_QUERY.format(user=user)
     conn.cur.execute(query)
     current_t = conn.cur.fetchone()
     if current_t is None or any([t is None for t in current_t]):
         return 0, 0, [0, 0, 0, 0, 0]
     current_t = [datetime.strptime(t, DATE_FORMAT[:8]) for t in current_t]
-    now = get_now()
+    now = get_now(minus_time)
     t_i = -1
-    t = get_now()
+    t = now
     for t_i, t in enumerate(current_t):
         if t > now:
             break
@@ -249,7 +249,7 @@ def get_n_exercises(conn, user, unit):
     return n_exercises[0] if type(n_exercises) is tuple else n_exercises
 
 
-def get_time_since_starting_unit(conn, user, unit):
+def get_time_since_starting_unit(conn, user, unit, minus_time = MINUS_TIME):
     query = TIME_SINCE_START_UNIT_QUERY.format(user=user, unit=unit)
 
     conn.cur.execute(query)
@@ -261,7 +261,7 @@ def get_time_since_starting_unit(conn, user, unit):
     if start_date is None:
         return -1, None
     start_date = datetime.strptime(start_date[0], DATE_FORMAT)
-    now = get_now()
+    now = get_now(minus_time)
     return (now - start_date).days, start_date
 
 
@@ -281,7 +281,7 @@ def get_percentage_done_of_unit(conn, unit, n_exercises):
     return n_exercises / len(actions) if len(actions) > 0 else 0
 
 
-def number_of_days_in_unit(conn, user, unit):
+def number_of_days_in_unit(conn, user, unit, minus_time = MINUS_TIME):
     actions = get_exercise_of_unit(conn, unit)
     query = NUMBER_OF_DAYS_FOR_UNIT_QUERY.format(actions=','.join([str(a) for a in actions]), user=user)
     conn.cur.execute(query)
@@ -293,7 +293,7 @@ def number_of_days_in_unit(conn, user, unit):
     if last_exercise_time is None:
         return -1
     last_exercise_time = datetime.strptime(last_exercise_time[0], DATE_FORMAT)
-    now = get_now()
+    now = get_now(minus_time)
     return (now - last_exercise_time).days
 
 
@@ -326,8 +326,8 @@ def get_x_sessions_back_with_y_session_where_after_is_higher_than_before_in_z_sc
     # return len(exercises[exercises >= z]) >= y
 
 
-def get_n_sessions_per_x_days_that_do_not_have_an_after_scales_and_done_session(conn, user, days):
-    query = N_SESSIONS_PER_X_DAYS_THAT_DO_NOT_HAVE_AN_AFTER_AND_DONE_SESSION.format(user=user, days=days)
+def get_n_sessions_per_x_days_that_do_not_have_an_after_scales_and_done_session(conn, user, days, minus_time = MINUS_TIME):
+    query = N_SESSIONS_PER_X_DAYS_THAT_DO_NOT_HAVE_AN_AFTER_AND_DONE_SESSION.format(user=user, days=days, minus_time=minus_time)
     conn.cur.execute(query)
     exercises = conn.cur.fetchall()
     return sum([e[0] for e in exercises]) > 0
@@ -340,8 +340,8 @@ def get_n_different_exercises_per_x_samples(conn, user, samples):
     return exercises[0][0]
 
 
-def get_n_exercises_in_past_x_days(conn, user, days):
-    query = GET_N_EXERCISES_IN_PAST_X_DAYS.format(user=user, days=days)
+def get_n_exercises_in_past_x_days(conn, user, days, minus_time = MINUS_TIME):
+    query = GET_N_EXERCISES_IN_PAST_X_DAYS.format(user=user, days=days, minus_time=minus_time)
     conn.cur.execute(query)
     exercises = conn.cur.fetchall()
     return exercises[0][0]
@@ -479,14 +479,14 @@ def evaluate_trend(
     return None
 
 
-def get_last_time_message(conn, user, e):
+def get_last_time_message(conn, user, e, minus_time = MINUS_TIME):
     query = LAST_TIME_MESSAGE_QUERY.format(user=user, e=e)
     conn.cur.execute(query)
     last_time = conn.cur.fetchone()
     if last_time is None:
         return BIG_DAYS
     last_time = datetime.strptime(last_time[0], DATE_FORMAT)
-    return (get_now() - last_time).days
+    return (get_now(minus_time) - last_time).days
 
 
 def is_real_user(conn, user):

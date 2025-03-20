@@ -1,7 +1,7 @@
 def technique_order(technique):
     if technique == 1:
         return 1
-    if technique == [2, 3]:
+    if technique in [2, 3]:
         return 2
     return 3
 
