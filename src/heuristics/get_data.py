@@ -432,24 +432,29 @@ def get_trend(conn, user, measurements=14):
                   after_vas_within]
     trends_string = [before_suds, before_fat, before_vas, after_suds, after_fat, after_vas]
 
-    result = (
-            evaluate_trend(INC, suds_trend, fatigue_trend, vas_trend, trends_num, trends_string,
+    eval_trends = []
+    for tred in [INC, STAG, DET]:
+        eval_trend = evaluate_trend(tred, suds_trend, fatigue_trend, vas_trend, trends_num, trends_string,
                            before_fatigue_within, after_fatigue_within, before_suds_within, after_suds_within,
                            before_vas_within, after_vas_within)
-            or evaluate_trend(STAG, suds_trend, fatigue_trend, vas_trend, trends_num, trends_string,
-                              before_fatigue_within, after_fatigue_within, before_suds_within, after_suds_within,
-                              before_vas_within, after_vas_within)
-            or evaluate_trend(DET, suds_trend, fatigue_trend, vas_trend, trends_num, trends_string,
-                              before_fatigue_within, after_fatigue_within, before_suds_within, after_suds_within,
-                              before_vas_within, after_vas_within)
-    )
+        eval_trends.append(eval_trend)
+    inc_eval_trend, stag_eval_trend, det_eval_trend = eval_trends
+
+    if inc_eval_trend[1]:
+        result = inc_eval_trend
+    elif stag_eval_trend[1]:
+        result = stag_eval_trend
+    elif det_eval_trend[1]:
+        result = det_eval_trend
+    else:
+        result = (MISC, 0, '0-0')
+
     if result:
         return result
     # return MISC, 0, '0-0'
-
-    exercises = np.sum(exercises, axis=0)
-    trend = np.argmax(exercises)
-    return trend, score_to_CS(exercises[0]), score_to_CS(exercises[1])
+    # exercises = np.sum(exercises, axis=0)
+    # trend = np.argmax(exercises)
+    # return trend, score_to_CS(exercises[0]), score_to_CS(exercises[1])
 
 
 def evaluate_trend(
@@ -476,7 +481,7 @@ def evaluate_trend(
             sum_trend.append(before_vas_within == 0 and after_vas_within == 0)
         index = np.argmax(trends_num) if trend_type != DET else np.argmin(trends_num)
         return trend_type, all(sum_trend), trends_string[index]
-    return None
+    return None, None, None
 
 
 def get_last_time_message(conn, user, e, minus_time = MINUS_TIME):
