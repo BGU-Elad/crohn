@@ -129,7 +129,7 @@ class HumanExpert:
         second3_carousal = self.second_carousal(VAS)
         third_carousal = self.third_carousal()
         fourth_carousal = self.fourth_carousal()
-        messages, message_indexes = self.get_messages()
+        messages, message_indexes, user_trends = self.get_messages()
         user_to_recommendation = {}
         all_users = set(first_carousal.keys()).union(second1_carousal.keys()).union(second2_carousal.keys()).union(
             second3_carousal.keys()).union(third_carousal.keys()).union(fourth_carousal.keys())
@@ -145,7 +145,10 @@ class HumanExpert:
                 "message": (
                     get_first_or_empty(messages.get(user, [""])),
                     get_first_or_empty(message_indexes.get(user, [-1]))
-                )
+                ),
+                "trend": user_trends.get(user, [-1,-1,-1])[0],
+                "WITHIN": user_trends.get(user, [-1, -1, -1])[1],
+                "difference": user_trends.get(user, [-1, -1, -1])[2],
             }
         return user_to_recommendation
 
@@ -163,6 +166,7 @@ class HumanExpert:
                                         -1: 0} | {31: 1000, 32: 1000}
 
         user_to_message = {}
+        user_to_trends = {}
         users_gender = {}
         users = get_users(self.conn)
         for user in users:
@@ -184,6 +188,7 @@ class HumanExpert:
                 continue
 
             trend, within_or_between, cs = get_trend(self.conn, user)
+            user_to_trends[user] = (trend, within_or_between, cs)
             if trend == MISC:
                 # print(user, "bad: no valid trend")
                 user_to_message[user].append(-1)
@@ -416,4 +421,4 @@ class HumanExpert:
             indexes = sorted(user_to_message[user], key=lambda x: exercise_priority_message.index(x))
             user_to_message[user] = [id_to_message(self.conn, id_, users_gender.get(user, "M")) for id_ in indexes]
             user_indexes[user] = indexes
-        return user_to_message, user_indexes
+        return user_to_message, user_indexes, user_to_trends

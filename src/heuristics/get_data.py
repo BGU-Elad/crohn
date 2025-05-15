@@ -440,11 +440,11 @@ def get_trend(conn, user, measurements=14):
         eval_trends.append(eval_trend)
     inc_eval_trend, stag_eval_trend, det_eval_trend = eval_trends
 
-    if inc_eval_trend[1]:
+    if inc_eval_trend[1] is not None:
         result = inc_eval_trend
-    elif stag_eval_trend[1]:
+    elif stag_eval_trend[1] is not None:
         result = stag_eval_trend
-    elif det_eval_trend[1]:
+    elif det_eval_trend[1] is not None:
         result = det_eval_trend
     else:
         result = (MISC, 0, '0-0')
