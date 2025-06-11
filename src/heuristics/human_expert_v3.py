@@ -156,7 +156,7 @@ class HumanExpert:
 
         exercise_priority_message = [-1] + [63, 24, 25, 26, 27, 76] + list(range(12, 24)) + [66, 67, 68, 69, 70, 71, 72,
                                                                                              73, 74, 75] + list(
-            range(1, 11)) + list(range(28, 66))
+            range(1, 12)) + list(range(28, 66))
         exercise_message_interval = ({i: 2 for i in
                                       [63, 24, 25, 26, 27, 76] + list(range(12, 24)) + [66, 67, 68, 69, 70, 71, 72, 73,
                                                                                         74, 75] + list(
