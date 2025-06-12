@@ -131,8 +131,9 @@ class HumanExpert:
         fourth_carousal = self.fourth_carousal()
         messages, message_indexes, user_trends = self.get_messages()
         user_to_recommendation = {}
-        all_users = set(first_carousal.keys()).union(second1_carousal.keys()).union(second2_carousal.keys()).union(
-            second3_carousal.keys()).union(third_carousal.keys()).union(fourth_carousal.keys())
+        # all_users = set(first_carousal.keys()).union(second1_carousal.keys()).union(second2_carousal.keys()).union(
+        #     second3_carousal.keys()).union(third_carousal.keys()).union(fourth_carousal.keys())
+        all_users = get_users(self.conn)
         for user in all_users:
             user_to_recommendation[user] = {
                 "001A": first_carousal.get(user, []),
