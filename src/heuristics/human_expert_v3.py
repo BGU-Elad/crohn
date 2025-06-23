@@ -184,7 +184,6 @@ class HumanExpert:
                 continue
 
             trend, within_or_between, cs = get_trend(self.conn, user)
-            user_to_trends[user] = (trend, within_or_between, cs)
             if trend == MISC:
                 # print(user, "bad: no valid trend")
                 user_to_message[user].append(-1)
