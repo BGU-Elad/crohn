@@ -144,8 +144,10 @@ class HumanExpert:
                 "003": third_carousal.get(user, []),
                 "004": fourth_carousal.get(user, []),
                 "message": (
-                    get_first_or_empty(messages.get(user, [""])),
-                    get_first_or_empty(message_indexes.get(user, [-1]))
+                    # get_first_or_empty(messages.get(user, [""])),
+                    messages.get(user, [""]),
+                    # get_first_or_empty(message_indexes.get(user, [-1]))
+                    message_indexes.get(user, [-1])
                 ),
                 "trend": user_trends.get(user, [-1,-1,-1])[0],
                 "WITHIN": user_trends.get(user, [-1, -1, -1])[1],
