@@ -181,7 +181,7 @@ TRENDS_QUERY = """
     q2.fatigue AS fatigueQ2, q2.vas_pain AS vasQ2
     FROM last_x_mesurements as l JOIN Questionnaire as q1 on l.questionnairePrimerId = q1.questionnaireId
     JOIN Questionnaire as q2 on l.questionnaireLastId = q2.questionnaireId
-    ORDER BY l.dateStart DESC
+    ORDER BY l.dateStart
 """
 
 GET_N_EXERCISES_IN_PAST_X_DAYS = f"""
