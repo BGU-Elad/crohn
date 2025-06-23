@@ -418,4 +418,4 @@ class HumanExpert:
             indexes = sorted(user_to_message[user], key=lambda x: exercise_priority_message.index(x))
             user_to_message[user] = [id_to_message(self.conn, id_, users_gender.get(user, MALE)) for id_ in indexes]
             user_indexes[user] = indexes
-        return user_to_message, user_indexes, user_to_trends
+        return user_to_message, user_indexes
