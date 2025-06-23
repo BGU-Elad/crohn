@@ -129,7 +129,7 @@ class HumanExpert:
         second3_carousal = self.second_carousal(VAS)
         third_carousal = self.third_carousal()
         fourth_carousal = self.fourth_carousal()
-        messages, message_indexes, user_trends = self.get_messages()
+        messages, message_indexes = self.get_messages()
         user_to_recommendation = {}
         all_users = set(first_carousal.keys()).union(second1_carousal.keys()).union(second2_carousal.keys()).union(
             second3_carousal.keys()).union(third_carousal.keys()).union(fourth_carousal.keys())
