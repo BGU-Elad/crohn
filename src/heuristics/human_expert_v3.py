@@ -14,7 +14,7 @@ from src.heuristics.get_data import get_current_t, get_exercise_of_user, get_use
     id_to_message
 
 from src.utils.constants import FREE_USER_LEVEL, MORNING, EVENING, SUDS, FATIGUE, VAS, INC, STAG, DET, MISC, WITHIN, \
-    BETWEEN, MINUS_TIME
+    BETWEEN, MINUS_TIME, MALE
 from src.utils.utils import get_first_or_empty, take_two_from_each_cycle, get_now
 
 
@@ -420,6 +420,6 @@ class HumanExpert:
                     exercises.append(e)
             user_to_message[user] = exercises
             indexes = sorted(user_to_message[user], key=lambda x: exercise_priority_message.index(x))
-            user_to_message[user] = [id_to_message(self.conn, id_, users_gender.get(user, "M")) for id_ in indexes]
+            user_to_message[user] = [id_to_message(self.conn, id_, users_gender.get(user, MALE)) for id_ in indexes]
             user_indexes[user] = indexes
         return user_to_message, user_indexes, user_to_trends

@@ -7,7 +7,7 @@ from scipy.stats import linregress
 
 from src.heuristics.orderings import score_pair_to_CS, technique_order, score_to_CS
 from src.heuristics.queries import *
-from src.utils.constants import FATIGUE, SUDS, VAS, DATE_FORMAT, BIG_DAYS, STAG, DET, MISC, INC, MINUS_TIME
+from src.utils.constants import FATIGUE, SUDS, VAS, DATE_FORMAT, BIG_DAYS, STAG, DET, MISC, INC, MINUS_TIME, MALE
 
 from src.utils.utils import ExerciseData, calc_relative_delta, get_now
 
@@ -173,7 +173,7 @@ def id_to_message(conn, user_id, m_or_f):
     message = conn.cur.fetchone()
     if message is None:
         return ""
-    if m_or_f == "m":
+    if m_or_f.lower() == MALE.lower():
         message = message[0:3]
     else:
         message = message[3:]
