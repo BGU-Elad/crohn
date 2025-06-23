@@ -146,9 +146,6 @@ class HumanExpert:
                     get_first_or_empty(messages.get(user, [""])),
                     get_first_or_empty(message_indexes.get(user, [-1]))
                 ),
-                "trend": user_trends.get(user, [-1,-1,-1])[0],
-                "WITHIN": user_trends.get(user, [-1, -1, -1])[1],
-                "difference": user_trends.get(user, [-1, -1, -1])[2],
             }
         return user_to_recommendation
 
