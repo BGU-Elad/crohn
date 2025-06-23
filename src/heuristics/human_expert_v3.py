@@ -163,7 +163,6 @@ class HumanExpert:
                                         -1: 0} | {31: 1000, 32: 1000}
 
         user_to_message = {}
-        user_to_trends = {}
         users_gender = {}
         users = get_users(self.conn)
         for user in users:
