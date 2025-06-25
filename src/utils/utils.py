@@ -26,7 +26,7 @@ def get_first_or_empty(lst):
 
 
 def get_now(minus=MINUS_TIME):
-    return datetime.datetime.now() - datetime.timedelta(minutes=minus)
+    return datetime.datetime.now() - datetime.timedelta(days=minus)
 
 
 class ExerciseData:
