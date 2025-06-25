@@ -216,6 +216,7 @@ def get_current_t(conn, user, minus_time = MINUS_TIME):
     current_t = conn.cur.fetchone()
     if current_t is None or any([t is None for t in current_t]):
         return 0, 0, [0, 0, 0, 0, 0]
+    current_t = [t.split(" ")[0] for t in current_t] #because SOMEONE doesnt want to give me a DB and gives me an EXCEL!!!!!!!!!!!!!!!!!
     current_t = [datetime.strptime(t, DATE_FORMAT[:8]) for t in current_t]
     now = get_now(minus_time)
     t_i = -1

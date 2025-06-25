@@ -191,6 +191,7 @@ class HumanExpert:
                 continue
 
             trend, within_or_between, cs = get_trend(self.conn, user)
+            within_or_between = int(within_or_between)
             user_to_trends[user] = (trend, within_or_between, cs)
             if trend == MISC:
                 # print(user, "bad: no valid trend")
@@ -234,30 +235,30 @@ class HumanExpert:
             n_exercises_in_past_x_days = get_n_exercises_in_past_x_days(self.conn, user, 7, self.minus_time)
 
             if p_value == 1:
-                if (get_now(self.minus_time) - last_exercise_time).days == 3 and (
+                if (get_now(self.minus_time).date() - last_exercise_time.date()).days == 3 and (
                         trend in [INC, STAG]) and within_or_between == WITHIN:
                     user_to_message[user].append(1)
-                if (get_now(self.minus_time) - last_exercise_time).days == 3 and (
+                if (get_now(self.minus_time).date() - last_exercise_time.date()).days == 3 and (
                         trend in [INC, STAG]) and within_or_between == BETWEEN:
                     user_to_message[user].append(2)
-                if (get_now(self.minus_time) - last_exercise_time).days == 3 and (trend in [DET]) and within_or_between == WITHIN:
+                if (get_now(self.minus_time).date() - last_exercise_time.date()).days == 3 and (trend in [DET]) and within_or_between == WITHIN:
                     user_to_message[user].append(10)
-                if (get_now(self.minus_time) - last_exercise_time).days == 3 and (
+                if (get_now(self.minus_time).date() - last_exercise_time.date()).days == 3 and (
                         trend in [DET]) and within_or_between == BETWEEN:
                     user_to_message[user].append(11)
-                if 4 <= (get_now(self.minus_time) - last_exercise_time).days <= 14 and (trend in [INC]):
+                if 4 <= (get_now(self.minus_time).date() - last_exercise_time.date()).days <= 14 and (trend in [INC]):
                     user_to_message[user].append(3)
-                if 4 <= (get_now(self.minus_time) - last_exercise_time).days <= 14 and (trend in [STAG]):
+                if 4 <= (get_now(self.minus_time).date() - last_exercise_time.date()).days <= 14 and (trend in [STAG]):
                     user_to_message[user].append(4)
-                if 4 <= (get_now(self.minus_time) - last_exercise_time).days <= 14 and (trend in [DET]):
+                if 4 <= (get_now(self.minus_time).date() - last_exercise_time.date()).days <= 14 and (trend in [DET]):
                     user_to_message[user].append(5)
-                if 15 <= (get_now(self.minus_time) - last_exercise_time).days <= 22:
+                if 15 <= (get_now(self.minus_time).date() - last_exercise_time.date()).days <= 22:
                     user_to_message[user].append(6)
-                if 23 <= (get_now(self.minus_time) - last_exercise_time).days <= 29:
+                if 23 <= (get_now(self.minus_time).date() - last_exercise_time.date()).days <= 29:
                     user_to_message[user].append(7)
-                if 30 <= (get_now(self.minus_time) - last_exercise_time).days <= 60:
+                if 30 <= (get_now(self.minus_time).date() - last_exercise_time.date()).days <= 60:
                     user_to_message[user].append(8)
-                if 60 <= (get_now(self.minus_time) - last_exercise_time).days <= 90:
+                if 60 <= (get_now(self.minus_time).date() - last_exercise_time.date()).days <= 90:
                     user_to_message[user].append(9)
 
                 if current_unit == 1 and number_of_days_in_unit_value >= 3 and n_exercises_from_current_unit <= 1:
@@ -326,26 +327,26 @@ class HumanExpert:
                 if p_value == 2 and current_unit == 5 and (
                         date_of_starting_unit - last_exercise_time).days > 7 and trend in [DET]:
                     user_to_message[user].append(32)
-                if p_value > 1 and (get_now(self.minus_time) - last_exercise_time).days >= 3 and x_days_from_current_t == 3:
+                if p_value > 1 and (get_now(self.minus_time).date() - last_exercise_time.date()).days >= 3 and x_days_from_current_t == 3:
                     user_to_message[user].append(33)
-                if p_value > 1 and 7 > (get_now(self.minus_time) - last_exercise_time).days >= 3:
+                if p_value > 1 and 7 > (get_now(self.minus_time).date() - last_exercise_time.date()).days >= 3:
                     user_to_message[user].append(34)
 
-                if p_value > 1 and (get_now(self.minus_time) - last_exercise_time).days == 7 and trend in [INC,
+                if p_value > 1 and (get_now(self.minus_time).date() - last_exercise_time.date()).days == 7 and trend in [INC,
                                                                                                  STAG] and cs == "1-1":
                     user_to_message[user].append(35)
-                if p_value > 1 and (get_now(self.minus_time) - last_exercise_time).days == 7 and trend in [INC,
+                if p_value > 1 and (get_now(self.minus_time).date() - last_exercise_time.date()).days == 7 and trend in [INC,
                                                                                                  STAG] and cs == "2-2":
                     user_to_message[user].append(36)
-                if p_value > 1 and (get_now(self.minus_time) - last_exercise_time).days == 7 and trend in [INC,
+                if p_value > 1 and (get_now(self.minus_time).date() - last_exercise_time.date()).days == 7 and trend in [INC,
                                                                                                  STAG] and cs == "3-3":
                     user_to_message[user].append(37)
-                if p_value > 1 and (get_now(self.minus_time) - last_exercise_time).days == 7 and trend in [INC] and cs in ["3-1",
+                if p_value > 1 and (get_now(self.minus_time).date() - last_exercise_time.date()).days == 7 and trend in [INC] and cs in ["3-1",
                                                                                                                  "3-2"]:
                     user_to_message[user].append(38)
-                if p_value > 1 and (get_now(self.minus_time) - last_exercise_time).days == 7 and trend in [INC] and cs in ["2-1"]:
+                if p_value > 1 and (get_now(self.minus_time).date() - last_exercise_time.date()).days == 7 and trend in [INC] and cs in ["2-1"]:
                     user_to_message[user].append(39)
-                if p_value > 1 and (get_now(self.minus_time) - last_exercise_time).days == 7 and trend in [DET]:
+                if p_value > 1 and (get_now(self.minus_time).date() - last_exercise_time.date()).days == 7 and trend in [DET]:
                     if cs in ["1-1"]:
                         user_to_message[user].append(40)
                     if cs in ["2-2"]:
@@ -357,15 +358,15 @@ class HumanExpert:
                     if cs in ["1-2"]:
                         user_to_message[user].append(44)
 
-                if p_value > 1 and 21 >= (get_now(self.minus_time) - last_exercise_time).days >= 14:
+                if p_value > 1 and 21 >= (get_now(self.minus_time).date() - last_exercise_time.date()).days >= 14:
                     user_to_message[user].append(45)
-                if p_value > 1 and 28 >= (get_now(self.minus_time) - last_exercise_time).days >= 21:
+                if p_value > 1 and 28 >= (get_now(self.minus_time).date() - last_exercise_time.date()).days >= 21:
                     user_to_message[user].append(46)
-                if p_value > 1 and 8 * 7 >= (get_now(self.minus_time) - last_exercise_time).days >= 28:
+                if p_value > 1 and 8 * 7 >= (get_now(self.minus_time).date() - last_exercise_time.date()).days >= 28:
                     user_to_message[user].append(47)
-                if p_value > 1 and 12 * 7 >= (get_now(self.minus_time) - last_exercise_time).days >= 8 * 7:
+                if p_value > 1 and 12 * 7 >= (get_now(self.minus_time).date() - last_exercise_time.date()).days >= 8 * 7:
                     user_to_message[user].append(48)
-                if p_value > 1 and (get_now(self.minus_time) - last_exercise_time).days >= 12 * 7:
+                if p_value > 1 and (get_now(self.minus_time).date() - last_exercise_time.date()).days >= 12 * 7:
                     user_to_message[user].append(49)
 
                 if p_value > 1 and n_different_exercises_per_x_samples <= 3:
