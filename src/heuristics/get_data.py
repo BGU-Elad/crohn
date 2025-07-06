@@ -7,7 +7,8 @@ from scipy.stats import linregress
 
 from src.heuristics.orderings import score_pair_to_CS, technique_order, score_to_CS
 from src.heuristics.queries import *
-from src.utils.constants import FATIGUE, SUDS, VAS, DATE_FORMAT, BIG_DAYS, STAG, DET, MISC, INC, MINUS_TIME, MALE
+from src.utils.constants import FATIGUE, SUDS, VAS, DATE_FORMAT, BIG_DAYS, STAG, DET, MISC, INC, MINUS_TIME, MALE, \
+    WITHIN, BETWEEN
 
 from src.utils.utils import ExerciseData, calc_relative_delta, get_now
 
@@ -357,7 +358,7 @@ def get_trend(conn, user, measurements=14):
 
     if len(exercises) < 2:
         # print("not enough exercises")
-        return MISC, 0, '0-0'
+        return MISC, WITHIN, '0-0'
 
     suds_q1_regression = np.array([e[0] for e in exercises])
     fatigue_q1_regression = np.array([e[1] for e in exercises])
@@ -448,7 +449,7 @@ def get_trend(conn, user, measurements=14):
     elif det_eval_trend[1] is not None:
         result = det_eval_trend
     else:
-        result = (MISC, 0, '0-0')
+        result = (MISC, WITHIN, '0-0')
 
     if result:
         return result
@@ -481,7 +482,7 @@ def evaluate_trend(
         if vas_trend == trend_type:
             sum_trend.append(before_vas_within == 0 and after_vas_within == 0)
         index = np.argmax(trends_num) if trend_type != DET else np.argmin(trends_num)
-        return trend_type, all(sum_trend), trends_string[index]
+        return trend_type, WITHIN if all(sum_trend) else BETWEEN, trends_string[index]
     return None, None, None
 
 
