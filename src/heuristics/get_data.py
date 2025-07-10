@@ -432,7 +432,7 @@ def get_trend(conn, user, measurements=14):
 
     trends_num = [before_vas_within, before_fatigue_within, before_suds_within, after_suds_within, after_fatigue_within,
                   after_vas_within]
-    trends_string = [before_suds, before_fat, before_vas, after_suds, after_fat, after_vas]
+    trends_string = [before_vas, before_fat, before_suds, after_suds, after_fat, after_vas]
 
     eval_trends = []
     for tred in [INC, STAG, DET]:
