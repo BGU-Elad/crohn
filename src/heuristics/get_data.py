@@ -403,6 +403,8 @@ def get_trend(conn, user, measurements=14):
         if q1slope <= 0 and q2slope <= 0:
             q1_reg = q1slope * (len(q1_regression) - 1) + q1intercept
             q2_reg = q2slope * (len(q2_regression) - 1) + q2intercept
+            q1_reg = q1_regression[-1]
+            q2_reg = q2_regression[-1]
             if q1_reg - q2_reg > 1:
                 curr_trend = INC
             elif 1 >= q1_reg - q2_reg >= 0:
@@ -474,15 +476,24 @@ def evaluate_trend(
         after_vas_within,
 ):
     if trend_type in [suds_trend, fatigue_trend, vas_trend]:
+        trend_nums_to_use = [] # [before_vas, before_fat, before_suds, after_suds, after_fat, after_vas]
+        trend_strings_to_use = []  # [before_vas, before_fat, before_suds, after_suds, after_fat, after_vas]
+
         sum_trend = [True]
         if suds_trend == trend_type:
             sum_trend.append(before_suds_within == 0 and after_suds_within == 0)
+            trend_nums_to_use += [trends_num[2], trends_num[3]]
+            trend_strings_to_use += [trends_string[2], trends_string[3]]
         if fatigue_trend == trend_type:
             sum_trend.append(before_fatigue_within == 0 and after_fatigue_within == 0)
+            trend_nums_to_use += [trends_num[1], trends_num[4]]
+            trend_strings_to_use += [trends_string[1], trends_string[4]]
         if vas_trend == trend_type:
             sum_trend.append(before_vas_within == 0 and after_vas_within == 0)
-        index = np.argmax(trends_num) if trend_type != DET else np.argmin(trends_num)
-        return trend_type, WITHIN if all(sum_trend) else BETWEEN, trends_string[index]
+            trend_nums_to_use += [trends_num[0], trends_num[-1]]
+            trend_strings_to_use += [trends_string[0], trends_string[-1]]
+        index = np.argmax(trend_nums_to_use) if trend_type != DET else np.argmin(trend_nums_to_use)
+        return trend_type, WITHIN if all(sum_trend) else BETWEEN, trend_strings_to_use[index]
     return None, None, None
 
 
