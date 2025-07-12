@@ -369,9 +369,9 @@ def get_trend(conn, user, measurements=14):
 
     def calculate_linear_regress(regression):
         return linregress(
-            # list(range(len(regression))), regression
+            list(range(len(regression))), regression
 
-            [0, len(regression)], [regression[0], regression.mean()]
+            # [0, len(regression)], [regression[0], regression.mean()]
         )
 
     suds_q1slope, suds_q1intercept, suds_q1r_value, suds_q1p_value, suds_q1std_err = \
