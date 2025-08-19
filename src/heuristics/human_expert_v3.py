@@ -144,14 +144,14 @@ class HumanExpert:
                 "003": third_carousal.get(user, []),
                 "004": fourth_carousal.get(user, []),
                 "message": (
-                    # get_first_or_empty(messages.get(user, [""])),
-                    messages.get(user, [""]),
-                    # get_first_or_empty(message_indexes.get(user, [-1]))
-                    message_indexes.get(user, [-1])
+                    get_first_or_empty(messages.get(user, [""])),
+                    # messages.get(user, [""]),
+                    get_first_or_empty(message_indexes.get(user, [-1]))
+                    # message_indexes.get(user, [-1])
                 ),
-                "trend": user_trends.get(user, [-1,-1,-1])[0],
-                "WITHIN": user_trends.get(user, [-1, -1, -1])[1],
-                "difference": user_trends.get(user, [-1, -1, -1])[2],
+                # "trend": user_trends.get(user, [-1,-1,-1])[0],
+                # "WITHIN": user_trends.get(user, [-1, -1, -1])[1],
+                # "difference": user_trends.get(user, [-1, -1, -1])[2],
             }
         return user_to_recommendation
 
@@ -421,7 +421,8 @@ class HumanExpert:
                 if last > exercise_message_interval[e]:
                     exercises.append(e)
             user_to_message[user] = exercises
-            indexes = sorted(user_to_message[user], key=lambda x: exercise_priority_message.index(x))
+            indexes = sorted(user_to_message[user], key=lambda x: exercise_priority_message.index(x), reverse=True)
+            indexes = [i for i in indexes if i<10]
             user_to_message[user] = [id_to_message(self.conn, id_, users_gender.get(user, MALE)) for id_ in indexes]
             user_indexes[user] = indexes
         return user_to_message, user_indexes, user_to_trends
