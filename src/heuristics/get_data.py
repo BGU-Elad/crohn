@@ -191,18 +191,31 @@ def get_user_sex(conn, user):
 
 
 def get_should_be_unit(conn, user, minus_time = MINUS_TIME):
-    query = SHOULD_BE_UNIT_QUERY.format(user=user)
+    # query = SHOULD_BE_UNIT_QUERY.format(user=user)
+    # conn.cur.execute(query)
+    # start_date = conn.cur.fetchone()
+    query = CURRENT_UNIT_QUERY.format(user=user)
+    conn.cur.execute(query)
+    current_unit = conn.cur.fetchone()
+    current_unit = current_unit[0]
+
+    query = CURRENT_UNIT_TIME_QUERY.format(user=user)
     conn.cur.execute(query)
     start_date = conn.cur.fetchone()
+
+
     if start_date is None:
         return 0
     query = LEVEL_DAYS_QUERY
     conn.cur.execute(query)
     level_days = conn.cur.fetchall()
     now_time = get_now(minus_time)
-    start_date = datetime.strptime(start_date[0], DATE_FORMAT)
+    cleaned = start_date[0].split('.')[0]
+    start_date = datetime.strptime(cleaned, DATE_FORMAT)
     level = -1
     for level, days in level_days:
+        if level < current_unit:
+            continue
         if start_date + timedelta(days=days) < now_time:
             start_date = start_date + timedelta(days=days)
         else:
@@ -262,7 +275,8 @@ def get_time_since_starting_unit(conn, user, unit, minus_time = MINUS_TIME):
         start_date = conn.cur.fetchone()
     if start_date is None:
         return -1, None
-    start_date = datetime.strptime(start_date[0], DATE_FORMAT)
+    cleaned = start_date[0].split('.')[0]
+    start_date = datetime.strptime(cleaned, DATE_FORMAT)
     now = get_now(minus_time)
     return (now - start_date).days, start_date
 
@@ -274,7 +288,8 @@ def get_last_exercise_date(conn, user):
 
     if last_exercise_time is None:
         return None
-    last_exercise_time = datetime.strptime(last_exercise_time[0], DATE_FORMAT)
+    cleaned = last_exercise_time[0].split('.')[0]
+    last_exercise_time = datetime.strptime(cleaned, DATE_FORMAT)
     return last_exercise_time
 
 
@@ -294,7 +309,8 @@ def number_of_days_in_unit(conn, user, unit, minus_time = MINUS_TIME):
         last_exercise_time = conn.cur.fetchone()
     if last_exercise_time is None:
         return -1
-    last_exercise_time = datetime.strptime(last_exercise_time[0], DATE_FORMAT)
+    cleaned = last_exercise_time[0].split('.')[0]
+    last_exercise_time = datetime.strptime(cleaned, DATE_FORMAT)
     now = get_now(minus_time)
     return (now - last_exercise_time).days
 

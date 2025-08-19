@@ -176,7 +176,7 @@ LAST_TIME_MESSAGE_QUERY = """
 
 TRENDS_QUERY = """
     WITH 
-    last_x_mesurements AS (SELECT * FROM Exercise WHERE userId = {user} AND dateStart != (SELECT MIN(dateStart) FROM Exercise WHERE userId = {user})
+    last_x_mesurements AS (SELECT * FROM Exercise WHERE userId = {user}
      ORDER BY dateStart DESC LIMIT {measurements})
     SELECT q1.suds_stress AS sudsQ1, q1.fatigue AS fatigueQ1, q1.vas_pain AS vasQ1, q2.suds_stress AS sudsQ2,
     q2.fatigue AS fatigueQ2, q2.vas_pain AS vasQ2
@@ -226,7 +226,7 @@ SELECT startLevel FROM PositionLevel WHERE userId = {user} AND levelId = {unit}
 """
 
 LAST_EXERCISE_DATE_QUERY = """
-        SELECT dateStart FROM Exercise WHERE userId = {user} ORDER BY dateStart DESC
+        SELECT dateStart FROM Exercise WHERE userId = {user} ORDER BY dateStart DESC LIMIT 1
     """
 
 
@@ -249,6 +249,9 @@ CURRENT_UNIT_QUERY = """
     SELECT levelId FROM PositionLevel WHERE userId = {user}
 """
 
+CURRENT_UNIT_TIME_QUERY = """
+    SELECT startLevel FROM PositionLevel WHERE userId = {user}
+"""
 CURRENT_T_QUERY = """
     SELECT T1, T2, T3, T4, T5 FROM Sheet1 as s JOIN App_user as a on a.username = s.acount WHERE a.id = {user}
 
