@@ -7,7 +7,8 @@ from scipy.stats import linregress
 
 from src.heuristics.orderings import score_pair_to_CS, technique_order, score_to_CS
 from src.heuristics.queries import *
-from src.utils.constants import FATIGUE, SUDS, VAS, DATE_FORMAT, BIG_DAYS, STAG, DET, MISC, INC, MINUS_TIME, MALE
+from src.utils.constants import FATIGUE, SUDS, VAS, DATE_FORMAT, BIG_DAYS, STAG, DET, MISC, INC, MINUS_TIME, MALE, \
+    WITHIN, BETWEEN
 
 from src.utils.utils import ExerciseData, calc_relative_delta, get_now
 
@@ -216,7 +217,7 @@ def get_current_t(conn, user, minus_time = MINUS_TIME):
     current_t = conn.cur.fetchone()
     if current_t is None or any([t is None for t in current_t]):
         return 0, 0, [0, 0, 0, 0, 0]
-    # current_t = [t.split(" ")[0] for t in current_t]
+    current_t = [t.split(" ")[0] for t in current_t] #because SOMEONE doesnt want to give me a DB and gives me an EXCEL!!!!!!!!!!!!!!!!!
     current_t = [datetime.strptime(t, DATE_FORMAT[:8]) for t in current_t]
     now = get_now(minus_time)
     t_i = -1
@@ -357,7 +358,7 @@ def get_trend(conn, user, measurements=14):
 
     if len(exercises) < 2:
         # print("not enough exercises")
-        return MISC, 0, '0-0'
+        return MISC, WITHIN, '0-0'
 
     suds_q1_regression = np.array([e[0] for e in exercises])
     fatigue_q1_regression = np.array([e[1] for e in exercises])
@@ -368,9 +369,9 @@ def get_trend(conn, user, measurements=14):
 
     def calculate_linear_regress(regression):
         return linregress(
-            # list(range(len(regression))), regression
+            list(range(len(regression))), regression
 
-            [0, len(regression)], [regression[0], regression.mean()]
+            # [0, len(regression)], [regression[0], regression.mean()]
         )
 
     suds_q1slope, suds_q1intercept, suds_q1r_value, suds_q1p_value, suds_q1std_err = \
@@ -402,6 +403,8 @@ def get_trend(conn, user, measurements=14):
         if q1slope <= 0 and q2slope <= 0:
             q1_reg = q1slope * (len(q1_regression) - 1) + q1intercept
             q2_reg = q2slope * (len(q2_regression) - 1) + q2intercept
+            q1_reg = q1_regression[-1]
+            q2_reg = q2_regression[-1]
             if q1_reg - q2_reg > 1:
                 curr_trend = INC
             elif 1 >= q1_reg - q2_reg >= 0:
@@ -431,7 +434,7 @@ def get_trend(conn, user, measurements=14):
 
     trends_num = [before_vas_within, before_fatigue_within, before_suds_within, after_suds_within, after_fatigue_within,
                   after_vas_within]
-    trends_string = [before_suds, before_fat, before_vas, after_suds, after_fat, after_vas]
+    trends_string = [before_vas, before_fat, before_suds, after_suds, after_fat, after_vas]
 
     eval_trends = []
     for tred in [INC, STAG, DET]:
@@ -448,7 +451,7 @@ def get_trend(conn, user, measurements=14):
     elif det_eval_trend[1] is not None:
         result = det_eval_trend
     else:
-        result = (MISC, 0, '0-0')
+        result = (MISC, WITHIN, '0-0')
 
     if result:
         return result
@@ -473,15 +476,24 @@ def evaluate_trend(
         after_vas_within,
 ):
     if trend_type in [suds_trend, fatigue_trend, vas_trend]:
+        trend_nums_to_use = [] # [before_vas, before_fat, before_suds, after_suds, after_fat, after_vas]
+        trend_strings_to_use = []  # [before_vas, before_fat, before_suds, after_suds, after_fat, after_vas]
+
         sum_trend = [True]
         if suds_trend == trend_type:
             sum_trend.append(before_suds_within == 0 and after_suds_within == 0)
+            trend_nums_to_use += [trends_num[2], trends_num[3]]
+            trend_strings_to_use += [trends_string[2], trends_string[3]]
         if fatigue_trend == trend_type:
             sum_trend.append(before_fatigue_within == 0 and after_fatigue_within == 0)
+            trend_nums_to_use += [trends_num[1], trends_num[4]]
+            trend_strings_to_use += [trends_string[1], trends_string[4]]
         if vas_trend == trend_type:
             sum_trend.append(before_vas_within == 0 and after_vas_within == 0)
-        index = np.argmax(trends_num) if trend_type != DET else np.argmin(trends_num)
-        return trend_type, all(sum_trend), trends_string[index]
+            trend_nums_to_use += [trends_num[0], trends_num[-1]]
+            trend_strings_to_use += [trends_string[0], trends_string[-1]]
+        index = np.argmax(trend_nums_to_use) if trend_type != DET else np.argmin(trend_nums_to_use)
+        return trend_type, WITHIN if all(sum_trend) else BETWEEN, trend_strings_to_use[index]
     return None, None, None
 
 

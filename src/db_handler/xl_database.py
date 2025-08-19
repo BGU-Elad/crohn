@@ -2,6 +2,7 @@ import pandas as pd
 import sqlite3
 
 from src.db_handler.queries import ALL_TABLES_QUERY, ALL_TABLE_QUERY
+from datetime import datetime
 
 
 class ExcelSQL:
@@ -14,7 +15,8 @@ class ExcelSQL:
     def create_table(self):
         for df in self.df:
             for sheet_name, d in df.items():
-                if sheet_name == "History_bots": from datetime import datetime; d['date'] = d['date'].apply(lambda date_str: datetime.strptime(date_str, "%d-%m-%Y %H:%M:%S").strftime("%Y-%m-%d %H:%M:%S"))
+                if sheet_name == "History_bots":
+                    d['date'] = d['date'].apply(lambda date_str: datetime.strptime(date_str, "%d-%m-%Y %H:%M:%S").strftime("%Y-%m-%d %H:%M:%S"))
                 d.to_sql(sheet_name, self.conn, if_exists='replace', index=False)
 
     def get_tables(self):

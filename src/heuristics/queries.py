@@ -176,12 +176,13 @@ LAST_TIME_MESSAGE_QUERY = """
 
 TRENDS_QUERY = """
     WITH 
-    last_x_mesurements AS (SELECT * FROM Exercise WHERE userId = {user} ORDER BY dateStart DESC LIMIT {measurements})
+    last_x_mesurements AS (SELECT * FROM Exercise WHERE userId = {user}
+     ORDER BY dateStart DESC LIMIT {measurements})
     SELECT q1.suds_stress AS sudsQ1, q1.fatigue AS fatigueQ1, q1.vas_pain AS vasQ1, q2.suds_stress AS sudsQ2,
     q2.fatigue AS fatigueQ2, q2.vas_pain AS vasQ2
     FROM last_x_mesurements as l JOIN Questionnaire as q1 on l.questionnairePrimerId = q1.questionnaireId
     JOIN Questionnaire as q2 on l.questionnaireLastId = q2.questionnaireId
-    ORDER BY l.dateStart 
+    ORDER BY l.dateStart
 """
 
 GET_N_EXERCISES_IN_PAST_X_DAYS = f"""

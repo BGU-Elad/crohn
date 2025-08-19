@@ -144,7 +144,9 @@ class HumanExpert:
                 "004": fourth_carousal.get(user, []),
                 "message": (
                     get_first_or_empty(messages.get(user, [""])),
+                    # messages.get(user, [""]),
                     get_first_or_empty(message_indexes.get(user, [-1]))
+                    # message_indexes.get(user, [-1])
                 ),
             }
         return user_to_recommendation
@@ -250,7 +252,7 @@ class HumanExpert:
                     user_to_message[user].append(7)
                 if 30 <= (get_now(self.minus_time).date() - last_exercise_time.date()).days <= 60:
                     user_to_message[user].append(8)
-                if 60 <= (get_now(self.minus_time).date() - last_exercise_time.date()).days <= 90:
+                if 61 <= (get_now(self.minus_time).date() - last_exercise_time.date()).days <= 90:
                     user_to_message[user].append(9)
 
                 if current_unit == 1 and number_of_days_in_unit_value >= 3 and n_exercises_from_current_unit <= 1:
@@ -414,7 +416,8 @@ class HumanExpert:
                 if last > exercise_message_interval[e]:
                     exercises.append(e)
             user_to_message[user] = exercises
-            indexes = sorted(user_to_message[user], key=lambda x: exercise_priority_message.index(x))
+            indexes = sorted(user_to_message[user], key=lambda x: exercise_priority_message.index(x), reverse=True)
+            indexes = [i for i in indexes if i<10]
             user_to_message[user] = [id_to_message(self.conn, id_, users_gender.get(user, MALE)) for id_ in indexes]
             user_indexes[user] = indexes
         return user_to_message, user_indexes
