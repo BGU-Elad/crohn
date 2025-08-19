@@ -176,7 +176,7 @@ LAST_TIME_MESSAGE_QUERY = """
 
 TRENDS_QUERY = """
     WITH 
-    last_x_mesurements AS (SELECT * FROM Exercise WHERE userId = {user} AND dateStart != (SELECT MIN(dateStart) FROM Exercise WHERE userId = {user})
+    last_x_mesurements AS (SELECT * FROM Exercise WHERE userId = {user}
      ORDER BY dateStart DESC LIMIT {measurements})
     SELECT q1.suds_stress AS sudsQ1, q1.fatigue AS fatigueQ1, q1.vas_pain AS vasQ1, q2.suds_stress AS sudsQ2,
     q2.fatigue AS fatigueQ2, q2.vas_pain AS vasQ2
