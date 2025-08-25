@@ -120,7 +120,7 @@ class HumanExpert:
             exercise_for_user[user[0]] = sorted_exercises
         return exercise_for_user
 
-    def recommend(self, time: Optional[int] = 0):
+    def recommend(self, time: Optional[int] = 0, DEBUG: bool = False):
         assert time in [0, 1], "time 0 is morning and time 1 is evening"
         first_carousal = self.first_carousal(MORNING)
         first2_carousal = self.first_carousal(EVENING)
@@ -129,11 +129,32 @@ class HumanExpert:
         second3_carousal = self.second_carousal(VAS)
         third_carousal = self.third_carousal()
         fourth_carousal = self.fourth_carousal()
-        messages, message_indexes = self.get_messages()
+        messages, message_indexes, user_trends, users_to_sex = self.get_messages()
         user_to_recommendation = {}
-        all_users = set(first_carousal.keys()).union(second1_carousal.keys()).union(second2_carousal.keys()).union(
-            second3_carousal.keys()).union(third_carousal.keys()).union(fourth_carousal.keys())
+        # all_users = set(first_carousal.keys()).union(second1_carousal.keys()).union(second2_carousal.keys()).union(
+        #     second3_carousal.keys()).union(third_carousal.keys()).union(fourth_carousal.keys())
+        all_users = [u[0] for u in get_users(self.conn)]
         for user in all_users:
+
+            if DEBUG:
+                message = (
+                    messages.get(user, [""]),
+                    message_indexes.get(user, [-1]),
+                    users_to_sex.get(user, "derp"),
+                )
+                extra = {
+                    "trend": user_trends.get(user, [-1, -1, -1])[0],
+                    "WITHIN": user_trends.get(user, [-1, -1, -1])[1],
+                    "difference": user_trends.get(user, [-1, -1, -1])[2],
+                }
+            else:
+                message = (
+                    get_first_or_empty(messages.get(user, [""])),
+                    get_first_or_empty(message_indexes.get(user, [-1]))
+                )
+                extra = {}
+
+
             user_to_recommendation[user] = {
                 "001A": first_carousal.get(user, []),
                 "001B": first2_carousal.get(user, []),
@@ -142,13 +163,9 @@ class HumanExpert:
                 "002C": second3_carousal.get(user, []),
                 "003": third_carousal.get(user, []),
                 "004": fourth_carousal.get(user, []),
-                "message": (
-                    get_first_or_empty(messages.get(user, [""])),
-                    # messages.get(user, [""]),
-                    get_first_or_empty(message_indexes.get(user, [-1]))
-                    # message_indexes.get(user, [-1])
-                ),
+                "message": message,
             }
+            user_to_recommendation[user] |= extra
         return user_to_recommendation
 
     def get_messages(self):
@@ -165,6 +182,7 @@ class HumanExpert:
                                         -1: 0} | {31: 1000, 32: 1000}
 
         user_to_message = {}
+        user_to_trends = {}
         users_gender = {}
         users = get_users(self.conn)
         for user in users:
@@ -187,6 +205,7 @@ class HumanExpert:
 
             trend, within_or_between, cs = get_trend(self.conn, user)
             within_or_between = int(within_or_between)
+            user_to_trends[user] = (trend, within_or_between, cs)
             if trend == MISC:
                 # print(user, "bad: no valid trend")
                 user_to_message[user].append(-1)
@@ -235,11 +254,11 @@ class HumanExpert:
                 if (get_now(self.minus_time).date() - last_exercise_time.date()).days == 3 and (
                         trend in [INC, STAG]) and within_or_between == BETWEEN:
                     user_to_message[user].append(2)
-                if (get_now(self.minus_time).date() - last_exercise_time.date()).days == 3 and (trend in [DET]) and within_or_between == WITHIN:
+                if (get_now(self.minus_time).date() - last_exercise_time.date()).days == 3 and (trend in [DET]): #and within_or_between == WITHIN:
                     user_to_message[user].append(10)
-                if (get_now(self.minus_time).date() - last_exercise_time.date()).days == 3 and (
-                        trend in [DET]) and within_or_between == BETWEEN:
-                    user_to_message[user].append(11)
+                # if (get_now(self.minus_time).date() - last_exercise_time.date()).days == 3 and (
+                #         trend in [DET]) and within_or_between == BETWEEN:
+                #     user_to_message[user].append(11)
                 if 4 <= (get_now(self.minus_time).date() - last_exercise_time.date()).days <= 14 and (trend in [INC]):
                     user_to_message[user].append(3)
                 if 4 <= (get_now(self.minus_time).date() - last_exercise_time.date()).days <= 14 and (trend in [STAG]):
@@ -250,9 +269,9 @@ class HumanExpert:
                     user_to_message[user].append(6)
                 if 23 <= (get_now(self.minus_time).date() - last_exercise_time.date()).days <= 29:
                     user_to_message[user].append(7)
-                if 30 <= (get_now(self.minus_time).date() - last_exercise_time.date()).days <= 60:
+                if 30 <= (get_now(self.minus_time).date() - last_exercise_time.date()).days <= 59:
                     user_to_message[user].append(8)
-                if 61 <= (get_now(self.minus_time).date() - last_exercise_time.date()).days <= 90:
+                if 60 <= (get_now(self.minus_time).date() - last_exercise_time.date()).days <= 90:
                     user_to_message[user].append(9)
 
                 if current_unit == 1 and number_of_days_in_unit_value >= 3 and n_exercises_from_current_unit <= 1:
@@ -305,7 +324,7 @@ class HumanExpert:
                     user_to_message[user].append(25)
                 if current_unit == 5:
                     user_to_message[user].append(26)
-                if current_unit == 4 and percentage_done_of_unit < 0.8 * min_n_exercises_for_unit:
+                if current_unit == 4 and number_of_days_in_unit_value> min_n_days_for_unit and percentage_done_of_unit < 0.8 * min_n_exercises_for_unit:
                     user_to_message[user].append(27)
             elif p_value > 1:
                 if p_value == 2 and x_days_from_T_is[3 - 1] >= 6 * 30:
@@ -409,6 +428,7 @@ class HumanExpert:
                     user_to_message[user].append(75)
 
         user_indexes = {}
+        user_to_sex = {}
         for user in user_to_message:
             exercises = []
             for e in user_to_message[user]:
@@ -417,7 +437,8 @@ class HumanExpert:
                     exercises.append(e)
             user_to_message[user] = exercises
             indexes = sorted(user_to_message[user], key=lambda x: exercise_priority_message.index(x), reverse=True)
-            indexes = [i for i in indexes if i<10]
-            user_to_message[user] = [id_to_message(self.conn, id_, users_gender.get(user, MALE)) for id_ in indexes]
+            sex = users_gender.get(user, MALE)
+            user_to_sex[user] = sex
+            user_to_message[user] = [id_to_message(self.conn, id_, sex) for id_ in indexes]
             user_indexes[user] = indexes
-        return user_to_message, user_indexes
+        return user_to_message, user_indexes, user_to_trends, user_to_sex
