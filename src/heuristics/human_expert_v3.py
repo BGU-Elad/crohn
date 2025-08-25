@@ -136,10 +136,12 @@ class HumanExpert:
         all_users = [u[0] for u in get_users(self.conn)]
         for user in all_users:
 
+            m = messages.get(user, [""])
+            m_i = message_indexes.get(user, [-1])
             if DEBUG:
                 message = (
-                    messages.get(user, [""]),
-                    message_indexes.get(user, [-1]),
+                    m,
+                    m_i,
                     users_to_sex.get(user, "derp"),
                 )
                 extra = {
@@ -149,8 +151,8 @@ class HumanExpert:
                 }
             else:
                 message = (
-                    get_first_or_empty(messages.get(user, [""])),
-                    get_first_or_empty(message_indexes.get(user, [-1]))
+                    get_first_or_empty(m),
+                    get_first_or_empty(m_i)
                 )
                 extra = {}
 
@@ -437,6 +439,9 @@ class HumanExpert:
                     exercises.append(e)
             user_to_message[user] = exercises
             indexes = sorted(user_to_message[user], key=lambda x: exercise_priority_message.index(x), reverse=True)
+
+            indexes = [i for i in indexes if 3 < i < 11]
+
             sex = users_gender.get(user, MALE)
             user_to_sex[user] = sex
             user_to_message[user] = [id_to_message(self.conn, id_, sex) for id_ in indexes]
