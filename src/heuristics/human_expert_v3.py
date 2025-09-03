@@ -440,7 +440,7 @@ class HumanExpert:
             user_to_message[user] = exercises
             indexes = sorted(user_to_message[user], key=lambda x: exercise_priority_message.index(x), reverse=True)
 
-            indexes = [i for i in indexes if 3 < i < 11]
+            indexes = [i for i in indexes if i < 11]
 
             sex = users_gender.get(user, MALE)
             user_to_sex[user] = sex

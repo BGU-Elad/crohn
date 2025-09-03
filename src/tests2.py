@@ -43,14 +43,12 @@ TEST_CASES = [
 
     ("2", "24.06.2025", "../sensitive_data/tests/DB QA - rule 1 24.6- Female Morning FP(2).xlsx", "../sensitive_data/tests/acount and passwords.xlsx", None, None),
     ("1", "24.06.2025", "../sensitive_data/tests/DB QA - rule 1 24.6- Female Morning stag within.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "STAG", WITHIN),
-    # # ("1", None, "../sensitive_data/tests/DB QA - rule 1.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", None, None),
+    ("1", "25.06.2025", "../sensitive_data/tests/DB QA - rule 1 - improve within 25.6.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "INC", WITHIN),
     ("10", "24.06.2025", "../sensitive_data/tests/DB QA - rule 10 24.6- Female Morning DETER within.xlsx", "../sensitive_data/tests/acount and passwords2.xlsx", "DET", WITHIN),
     ("2", "25.06.2025", "../sensitive_data/tests/DB QA - rule 2 25.6 - Female Morning  improve NW.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "INC", BETWEEN),
     ("-2", "25.06.2025", "../sensitive_data/tests/DB QA - rule 2 25.6 - Female Morning  stag within FP.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "STAG", WITHIN),
     ("2", "25.06.2025", "../sensitive_data/tests/DB QA - rule 2 25.6- Male Evening improve NW.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "INC", BETWEEN),
-    # # ("-2", "25.06.2025", "../sensitive_data/tests/DB QA - rule 2 25.6- Male Evening stag NW FP.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "STAG", BETWEEN),
-    # # ("3", "25.06.2025", "../sensitive_data/tests/DB QA - rule 3 25.6- Female  Morning IMROV NW .xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "INC", BETWEEN),
-    # #  ("3", "25.06.2025", "../sensitive_data/tests/DB QA - rule 3 25.6- Male Evening IMPROVE WITHIN.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "INC", WITHIN),
+    ("2", "25.06.2025", "../sensitive_data/tests/DB QA - rule 2 25.6- Male Evening stag NW .xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "STAG", BETWEEN),
     ("3", "26.06.2025", "../sensitive_data/tests/DB QA - rule 3 26.6- Female  Morning IMROV NW .xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "INC", BETWEEN),
     ("4", "26.06.2025", "../sensitive_data/tests/DB QA - rule 3 26.6- Female  Morning STAG  FP(4).xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "STAG", None),
     ("3", "26.06.2025", "../sensitive_data/tests/DB QA - rule 3 26.6- Male Evening IMPROVE WITHIN.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "INC", WITHIN),
@@ -72,50 +70,6 @@ TEST_CASES = [
     ("9", "23.03.2025", "../sensitive_data/tests/DB QA - rule 9 23.3 - Female Morning.xlsx", "../sensitive_data/tests/acount and passwords2.xlsx", None, None),
     ("9", "24.03.2025", "../sensitive_data/tests/DB QA - rule 9 24.3- Male Evening.xlsx", "../sensitive_data/tests/acount and passwords2.xlsx", None, None),
 
-
-
-
-    # ("1",  "24.07.2025", "../sensitive_data/tests/DB QA - rule 1 male 24.7 evening .xlsx", "../sensitive_data/tests/acount and passwords.xlsx", None),
-    # ("1",  "24.06.2025", "../sensitive_data/tests/DB QA - rule 1 24.6- Female Morning IMPRO.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "INC"),
-    # ("1",  "24.06.2025", "../sensitive_data/tests/DB QA - rule 1 24.6- Female Morning.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", None),
-    #
-    #
-    # ("2",  "24.06.2025", "../sensitive_data/tests/DB QA - rule 2 24.6 - Female Morning  IMPROV.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "INC"),
-    # ("2",  "24.06.2025", "../sensitive_data/tests/DB QA - rule 2 24.6 - Female Morning  STAG.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "STAG"),
-    # ("2",  "24.06.2025", "../sensitive_data/tests/DB QA - rule 2 24.6- Male Evening.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", None),
-    #
-    # ("3",  "25.06.2025", "../sensitive_data/tests/DB QA - rule 3 25.6- Female  Morning IMROV .xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "INC"),
-    # ("3",  "25.06.2025", "../sensitive_data/tests/DB QA - rule 3 25.6- Male Evening IMROV .xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "INC"),
-    # # ("3",  "26.06.2025", "../sensitive_data/tests/DB QA - rule 3 26.6- Female  Morning IMROV .xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "INC"),
-    # ("3",  "26.06.2025", "../sensitive_data/tests/DB QA - rule 3 26.6- Female  Morning STAG .xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "STAG"),
-    # # ("3",  "26.06.2025", "../sensitive_data/tests/DB QA - rule 3 26.6- Male Evening IMROV .xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "INC"),
-    # ("3",  "29.06.2025", "../sensitive_data/tests/DB QA - rule 3 29.6 - Female Morning STAG.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "STAG"),
-    #
-    # ("3a", "25.06.2025", "../sensitive_data/tests/DB QA - rule 3a 25.6- Male Evening.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", None),
-    # ("3a", "29.06.2025", "../sensitive_data/tests/DB QA - rule 3a 29.6 - Female Morning.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", None),
-    #
-    # # ("3b", "29.06.2025", "../sensitive_data/tests/DB QA - rule 3b 29.6 - Female Morning.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", None),
-    #
-    # # ("4",  "01.07.2025", "../sensitive_data/tests/DB QA - rule 4 1.7- Female Morning.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", None),
-    # # ("4",  "01.07.2025", "../sensitive_data/tests/DB QA - rule 4 1.7- Male Evening.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", None),
-    # # ("4",  "29.06.2025", "../sensitive_data/tests/DB QA - rule 4 29.6 - Female Morning.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", None),
-    #
-    # # ("5",  "29.06.2025", "../sensitive_data/tests/DB QA - rule 5 29.6 - Female Morning ALL DETER.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "DET"),
-    # ("5",  "29.06.2025", "../sensitive_data/tests/DB QA - rule 5 29.6 - Female Morning ALL STAG.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "STAG"),
-    # # ("5",  "29.06.2025", "../sensitive_data/tests/DB QA - rule 5 29.6 - Male Evening ALL DETER.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "DET"),
-    # ("5",  "29.06.2025", "../sensitive_data/tests/DB QA - rule 5 29.6 - Male Evening IMPROV.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "INC"),
-    #
-    # # ("6",  "08.07.2025", "../sensitive_data/tests/DB QA - rule 6 8.7 - Female Morning.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", None),
-    # # ("6",  "08.07.2025", "../sensitive_data/tests/DB QA - rule 6 8.7- Male Evening.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", None),
-    # #
-    # # ("7",  "14.02.2025", "../sensitive_data/tests/DB QA - rule 7 14.2- Male Evening.xlsx", "../sensitive_data/tests/acount and passwords2.xlsx", None),
-    # # ("7",  "15.02.2025", "../sensitive_data/tests/DB QA - rule 7 15.2 - Female Morning.xlsx", "../sensitive_data/tests/acount and passwords2.xlsx", None),
-    # #
-    # # ("8",  "01.03.2025", "../sensitive_data/tests/DB QA - rule 8 1.3- Male Evening.xlsx", "../sensitive_data/tests/acount and passwords2.xlsx", None),
-    # # ("8",  "21.02.2025", "../sensitive_data/tests/DB QA - rule 8 21.2 - Female Morning.xlsx", "../sensitive_data/tests/acount and passwords2.xlsx", None),
-    #
-    # # ("9",  "23.03.2025", "../sensitive_data/tests/DB QA - rule 9 23.3 - Female Morning.xlsx", "../sensitive_data/tests/acount and passwords2.xlsx", None),
-    # # ("9",  "24.03.2025", "../sensitive_data/tests/DB QA - rule 9 24.3- Male Evening.xlsx", "../sensitive_data/tests/acount and passwords2.xlsx", None),
 ]
 
 # --- Helpers -----------------------------------------------------------------
