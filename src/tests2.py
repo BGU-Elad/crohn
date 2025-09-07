@@ -69,6 +69,8 @@ TEST_CASES = [
     ("8", "21.02.2025", "../sensitive_data/tests/DB QA - rule 8 21.2 - Female Morning.xlsx", "../sensitive_data/tests/acount and passwords2.xlsx", None, None),
     ("9", "23.03.2025", "../sensitive_data/tests/DB QA - rule 9 23.3 - Female Morning.xlsx", "../sensitive_data/tests/acount and passwords2.xlsx", None, None),
     ("9", "24.03.2025", "../sensitive_data/tests/DB QA - rule 9 24.3- Male Evening.xlsx", "../sensitive_data/tests/acount and passwords2.xlsx", None, None),
+    ("12", "19.01.2025", "../sensitive_data/tests/DB QA - rule 12 19.01 - Female Morning IMPRO.xlsx", "../sensitive_data/tests/acount and passwords2.xlsx", "INC", None),
+
 
 ]
 
@@ -185,7 +187,7 @@ def run_case(rule: str, date_str: str, file: str, T_file: str, trend: str, W_or_
 
     minus_days = (get_now(0).date() - datetime.strptime(date_str, "%d.%m.%Y").date()).days
     he = HumanExpert(exec_sql, minus_days)
-    recommendations = he.recommend(DEBUG=True)
+    recommendations = he.recommend(DEBUG=True, message_limit=15)
 
     rec = _safe_rec(recommendations, REC_IDX)
     msg = rec.get("message") if isinstance(rec, dict) else rec

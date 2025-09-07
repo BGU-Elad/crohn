@@ -120,7 +120,7 @@ class HumanExpert:
             exercise_for_user[user[0]] = sorted_exercises
         return exercise_for_user
 
-    def recommend(self, time: Optional[int] = 0, DEBUG: bool = False):
+    def recommend(self, time: Optional[int] = 0, DEBUG: bool = False, message_limit: int = 11):
         assert time in [0, 1], "time 0 is morning and time 1 is evening"
         first_carousal = self.first_carousal(MORNING)
         first2_carousal = self.first_carousal(EVENING)
@@ -129,7 +129,7 @@ class HumanExpert:
         second3_carousal = self.second_carousal(VAS)
         third_carousal = self.third_carousal()
         fourth_carousal = self.fourth_carousal()
-        messages, message_indexes, user_trends, users_to_sex = self.get_messages()
+        messages, message_indexes, user_trends, users_to_sex = self.get_messages(message_limit=message_limit)
         user_to_recommendation = {}
         # all_users = set(first_carousal.keys()).union(second1_carousal.keys()).union(second2_carousal.keys()).union(
         #     second3_carousal.keys()).union(third_carousal.keys()).union(fourth_carousal.keys())
@@ -170,7 +170,7 @@ class HumanExpert:
             user_to_recommendation[user] |= extra
         return user_to_recommendation
 
-    def get_messages(self):
+    def get_messages(self, message_limit=11):
 
         exercise_priority_message = [-1] + [63, 24, 25, 26, 27, 76] + list(range(12, 24)) + [66, 67, 68, 69, 70, 71, 72,
                                                                                              73, 74, 75] + list(
@@ -438,9 +438,12 @@ class HumanExpert:
                 if last > exercise_message_interval[e]:
                     exercises.append(e)
             user_to_message[user] = exercises
-            indexes = sorted(user_to_message[user], key=lambda x: exercise_priority_message.index(x), reverse=True)
 
-            indexes = [i for i in indexes if i < 11]
+            # indexes = sorted(user_to_message[user], key=lambda x: exercise_priority_message.index(x), reverse=True)
+            indexes = sorted(user_to_message[user], key=lambda x: exercise_priority_message.index(x))
+            indexes = [i for i in indexes if i < message_limit]
+
+
 
             sex = users_gender.get(user, MALE)
             user_to_sex[user] = sex
