@@ -70,7 +70,11 @@ TEST_CASES = [
     ("9", "23.03.2025", "../sensitive_data/tests/DB QA - rule 9 23.3 - Female Morning.xlsx", "../sensitive_data/tests/acount and passwords2.xlsx", None, None),
     ("9", "24.03.2025", "../sensitive_data/tests/DB QA - rule 9 24.3- Male Evening.xlsx", "../sensitive_data/tests/acount and passwords2.xlsx", None, None),
     ("12", "19.01.2025", "../sensitive_data/tests/DB QA - rule 12 19.01 - Female Morning IMPRO.xlsx", "../sensitive_data/tests/acount and passwords2.xlsx", "INC", None),
-
+    ("12", "18.01.2025", "../sensitive_data/tests/DB QA - rule 12 - missing exc -  18.01 - Female Morning IMPRO.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "INC", None),
+    ("-12", "18.01.2025", "../sensitive_data/tests/DB QA - rule 12 false - all completed 18.01 - Female Morning IMPRO.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "INC", None),
+    ("13", "18.01.2025", "../sensitive_data/tests/DB QA - rule 13 - missing exc  - 18.01 - Female Morning  ALL DETER.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "DET", None),
+    ("14", "26.01.2025", "../sensitive_data/tests/DB QA - rule 14 - missing exc -  26.01 - Female Morning IMPRO.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "INC", None),
+    ("15", "26.01.2025", "../sensitive_data/tests/DB QA - rule 15 - missing exc  - 26.01 - Female Morning  ALL DETER.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "DET", None),
 
 ]
 
@@ -187,7 +191,7 @@ def run_case(rule: str, date_str: str, file: str, T_file: str, trend: str, W_or_
 
     minus_days = (get_now(0).date() - datetime.strptime(date_str, "%d.%m.%Y").date()).days
     he = HumanExpert(exec_sql, minus_days)
-    recommendations = he.recommend(DEBUG=True, message_limit=15)
+    recommendations = he.recommend(DEBUG=True, message_limit=16)
 
     rec = _safe_rec(recommendations, REC_IDX)
     msg = rec.get("message") if isinstance(rec, dict) else rec
