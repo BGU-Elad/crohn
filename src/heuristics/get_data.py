@@ -49,13 +49,13 @@ def calculate_scores_and_deltas(scores1, scores2):
     scores = [score_pair_to_CS(scores1[i], scores2[i]) for i in range(len(scores1))]
     relative_deltas = [calc_relative_delta(scores1[i], scores2[i]) for i in range(len(scores1))]
     relative_deltas = np.array(relative_deltas)
-    max_index = np.argmax(scores)
-    max_score = scores[max_index]
-    return scores, relative_deltas, max_index, max_score
+    best_index = np.argmin(scores)
+    best_score = scores[best_index]
+    return scores, relative_deltas, best_index, best_score
 
 
 def get_exercise_of_user(conn, user_id: int, time: int, user_hour: str, min_percent: float = 0.8, minus_time=MINUS_TIME):
-    levels = get_level_of_current_exercise(conn, user_id, minus_time=minus_time)
+    levels = get_level_of_current_exercise(conn, user_id, days=365*5,minus_time=minus_time)
     time_direction = "<" if time == 0 else ">"
     query = EXERCISES_OF_USER_QUERY.format(user_id=user_id, time_direction=time_direction, user_hour=user_hour,
                                            min_percent=min_percent)
@@ -79,18 +79,25 @@ def get_exercise_of_user(conn, user_id: int, time: int, user_hour: str, min_perc
         metrics = [max_suds, max_fatigue, max_vas]
         metrics_arg_max = [suds_max_index, fat_max_index, vas_max_index]
         relative_deltas = [relative_deltas_suds, relative_deltas_fat, relative_deltas_vas]
+        scores = [suds_scores, fat_scores, vas_scores]
 
-        max_change_index = np.argmax(metrics)
-        max_change = metrics[max_change_index]
+        best_change_index = np.argmin(metrics)
+        best_change = metrics[best_change_index]
 
-        relative_delta = relative_deltas[max_change_index][metrics_arg_max[max_change_index]]
+        relative_delta = relative_deltas[best_change_index][metrics_arg_max[best_change_index]]
+        score = scores[best_change_index][metrics_arg_max[best_change_index]]
+
         relative_delta_count = len(
-            relative_deltas[max_change_index][relative_deltas[max_change_index] == relative_delta])
+            relative_deltas[best_change_index][relative_deltas[best_change_index] == relative_delta])
+
+        score_count = sum(np.array(scores[best_change_index]) == score)
+
         exercises_dict[exercise[0]] = ExerciseData(
             exercise=exercise[0],
             technique=technique_order(exercise[1]),
-            change=max_change,
+            change=best_change,
             relative_delta=relative_delta,
+            score_count=score_count,
             count=relative_delta_count,
             in_out_unit=exercise[0] in levels
         )
@@ -295,7 +302,7 @@ def get_last_exercise_date(conn, user):
 
 def get_percentage_done_of_unit(conn, unit, n_exercises):
     actions = get_exercise_of_unit(conn, unit)
-    return n_exercises / len(actions) if len(actions) > 0 else 0
+    return n_exercises / len(actions) if len(actions) > 0 else 0, len(actions)
 
 
 def number_of_days_in_unit(conn, user, unit, minus_time = MINUS_TIME):

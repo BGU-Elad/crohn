@@ -30,13 +30,14 @@ def get_now(minus=MINUS_TIME):
 
 
 class ExerciseData:
-    def __init__(self, exercise=None, technique=None, change=None, relative_delta=None, count=None, in_out_unit=None):
+    def __init__(self, exercise=None, technique=None, change=None, relative_delta=None, count=None, in_out_unit=None, score_count=None):
         self.exercise = exercise
         self.technique = technique
         self.change = change
         self.relative_delta = relative_delta
         self.count = count
         self.in_out_unit = in_out_unit
+        self.score_count = score_count
 
     def __dict__(self):
         d = {
@@ -45,6 +46,7 @@ class ExerciseData:
             "change": self.change,
             "relative_delta": self.relative_delta,
             "count": self.count,
+            "score_count": self.score_count,
             "in_out_unit": self.in_out_unit
         }
         return {k: v for k, v in d.items() if v is not None}

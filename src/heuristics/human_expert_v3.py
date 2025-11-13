@@ -43,10 +43,12 @@ class HumanExpert:
             sorted_exercises = []
             if len(df) > 0:
                 df["relative_delta"] = -1 * df["relative_delta"]
-                df["count"] = -1 * df["count"]
-                df = df.sort_values(["technique", "change", "relative_delta", "count", "in_out_unit"])
+                df["score_count"] = -1 * df["score_count"]
+                # df["count"] = -1 * df["count"]
+                df = df.sort_values(["technique", "change", "score_count", "relative_delta"])
                 df["relative_delta"] = -1 * df["relative_delta"]
-                df["count"] = -1 * df["count"]
+                # df["count"] = -1 * df["count"]
+                df["score_count"] = -1 * df["score_count"]
                 groups = [d for d in df.groupby("technique")]
                 new_groups = []
                 for group in groups:
@@ -170,7 +172,7 @@ class HumanExpert:
             user_to_recommendation[user] |= extra
         return user_to_recommendation
 
-    def get_messages(self, message_limit=16):
+    def get_messages(self, message_limit=20):
 
         exercise_priority_message = [-1] + [63, 24, 25, 26, 27, 76] + list(range(12, 24)) + [66, 67, 68, 69, 70, 71, 72,
                                                                                              73, 74, 75] + list(
@@ -189,65 +191,17 @@ class HumanExpert:
         users = get_users(self.conn)
         for user in users:
             user = user[0]
-            real_user = is_real_user(self.conn, user)
-
+            ok, user_sex, cs, current_unit, date_of_starting_unit, last_exercise_time, min_n_days_for_unit, min_n_exercises_for_unit, n_different_exercises_per_x_samples, n_exercises_from_current_unit, n_exercises_in_past_x_days, n_sessions_per_x_days_that_do_not_have_an_after_scales_and_done_session, number_of_days_in_unit_value, p_value, percentage_done_of_unit, should_be_unit, trend, within_or_between, x_days_from_T_is, x_days_from_current_t, x_sessions_back_with_y_session_where_after_is_higher_than_before_in_z_scales, total_excercises_of_unit = self.get_matrics_and_attributes(
+                user, user_to_trends)
+            print(n_exercises_from_current_unit)
             user_to_message[user] = []
 
-            if not real_user:
+            if not ok:
                 user_to_message[user].append(-1)
                 continue
-            user_sex = get_user_sex(self.conn, user)
+
             users_gender[user] = user_sex
-
-            last_exercise_time = get_last_exercise_date(self.conn, user)
-            if last_exercise_time is None:
-                # print(user, "bad: no exercise")
-                user_to_message[user].append(-1)
-                continue
-
-            trend, within_or_between, cs = get_trend(self.conn, user)
-            within_or_between = int(within_or_between)
             user_to_trends[user] = (trend, within_or_between, cs)
-            if trend == MISC:
-                # print(user, "bad: no valid trend")
-                user_to_message[user].append(-1)
-                continue
-
-            current_t, x_days_from_current_t, x_days_from_T_is = get_current_t(self.conn, user, self.minus_time)
-
-            p_value = current_t if current_t < 5 else 4
-            if p_value == 0:
-                # print(user, "bad: no T value")
-                user_to_message[user].append(-1)
-                continue
-
-            should_be_unit = get_should_be_unit(self.conn, user, self.minus_time)
-            current_unit = get_current_unit(self.conn, user)
-            n_exercises_from_current_unit = get_n_exercises(self.conn, user, current_unit)
-            time_since_starting_unit, date_of_starting_unit = get_time_since_starting_unit(
-                self.conn,
-                user,
-                current_unit,
-                self.minus_time
-            )
-            percentage_done_of_unit = get_percentage_done_of_unit(
-                self.conn,
-                current_unit,
-                n_exercises_from_current_unit
-            )
-            number_of_days_in_unit_value = number_of_days_in_unit(self.conn, user, current_unit, self.minus_time)
-            min_n_exercises_for_unit = get_min_n_exercises_for_unit(self.conn, current_unit)
-            min_n_days_for_unit = get_min_n_days_for_unit(self.conn, current_unit)
-            x_sessions_back_with_y_session_where_after_is_higher_than_before_in_z_scales = \
-                get_x_sessions_back_with_y_session_where_after_is_higher_than_before_in_z_scales(
-                    self.conn, user, x=4, y=2, z=2
-                )
-            n_sessions_per_x_days_that_do_not_have_an_after_scales_and_done_session = \
-                get_n_sessions_per_x_days_that_do_not_have_an_after_scales_and_done_session(
-                    self.conn, user, current_t, self.minus_time
-                )
-            n_different_exercises_per_x_samples = get_n_different_exercises_per_x_samples(self.conn, user, 14)
-            n_exercises_in_past_x_days = get_n_exercises_in_past_x_days(self.conn, user, 7, self.minus_time)
 
             if p_value == 1:
                 if (get_now(self.minus_time).date() - last_exercise_time.date()).days == 3 and (
@@ -320,20 +274,20 @@ class HumanExpert:
                     user_to_message[user].append(23)
                 if x_sessions_back_with_y_session_where_after_is_higher_than_before_in_z_scales:
                     user_to_message[user].append(76)
-                if min_n_days_for_unit > number_of_days_in_unit_value and current_unit in [1, 2, 3]:
+                if min_n_days_for_unit > number_of_days_in_unit_value and n_exercises_from_current_unit > min_n_exercises_for_unit and current_unit in [1, 2, 3]:
                     user_to_message[user].append(24)
-                if min_n_days_for_unit > number_of_days_in_unit_value and current_unit in [4]:
+                if min_n_days_for_unit > number_of_days_in_unit_value and n_exercises_from_current_unit > min_n_exercises_for_unit and current_unit in [4]:
                     user_to_message[user].append(25)
                 if current_unit == 5:
                     user_to_message[user].append(26)
                 if current_unit == 4 and number_of_days_in_unit_value> min_n_days_for_unit and percentage_done_of_unit < 0.8 * min_n_exercises_for_unit:
                     user_to_message[user].append(27)
             elif p_value > 1:
-                if p_value == 2 and x_days_from_T_is[3 - 1] >= 6 * 30:
+                if p_value == 2 and -x_days_from_T_is[3 - 1] >= 6 * 30:
                     user_to_message[user].append(28)
-                if p_value == 3 and x_days_from_T_is[4 - 1] >= 9 * 30:
+                if p_value == 3 and -x_days_from_T_is[4 - 1] >= 9 * 30:
                     user_to_message[user].append(29)
-                if p_value == 4 and x_days_from_T_is[5 - 1] >= 12 * 30:
+                if p_value == 4 and -x_days_from_T_is[5 - 1] >= 12 * 30:
                     user_to_message[user].append(30)
 
                 if p_value == 2 and current_unit == 5 and (
@@ -450,3 +404,52 @@ class HumanExpert:
             user_to_message[user] = [id_to_message(self.conn, id_, sex) for id_ in indexes]
             user_indexes[user] = indexes
         return user_to_message, user_indexes, user_to_trends, user_to_sex
+
+    def get_matrics_and_attributes(self, user, user_to_trends):
+        real_user = is_real_user(self.conn, user)
+        if not real_user:
+            return  False, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None
+        user_sex = get_user_sex(self.conn, user)
+
+        last_exercise_time = get_last_exercise_date(self.conn, user)
+        if last_exercise_time is None:
+            # print(user, "bad: no exercise")
+            return  False,None,None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None
+        trend, within_or_between, cs = get_trend(self.conn, user)
+        within_or_between = int(within_or_between)
+        if trend == MISC:
+            # print(user, "bad: no valid trend")
+            return  False,None,None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None
+        current_t, x_days_from_current_t, x_days_from_T_is = get_current_t(self.conn, user, self.minus_time)
+        p_value = current_t if current_t < 5 else 4
+        if p_value == 0:
+            # print(user, "bad: no T value")
+            return  False, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None
+        should_be_unit = get_should_be_unit(self.conn, user, self.minus_time)
+        current_unit = get_current_unit(self.conn, user)
+        n_exercises_from_current_unit = get_n_exercises(self.conn, user, current_unit)
+        time_since_starting_unit, date_of_starting_unit = get_time_since_starting_unit(
+            self.conn,
+            user,
+            current_unit,
+            self.minus_time
+        )
+        percentage_done_of_unit, total_excercises_of_unit = get_percentage_done_of_unit(
+            self.conn,
+            current_unit,
+            n_exercises_from_current_unit
+        )
+        number_of_days_in_unit_value = number_of_days_in_unit(self.conn, user, current_unit, self.minus_time)
+        min_n_exercises_for_unit = get_min_n_exercises_for_unit(self.conn, current_unit)
+        min_n_days_for_unit = get_min_n_days_for_unit(self.conn, current_unit)
+        x_sessions_back_with_y_session_where_after_is_higher_than_before_in_z_scales = \
+            get_x_sessions_back_with_y_session_where_after_is_higher_than_before_in_z_scales(
+                self.conn, user, x=4, y=2, z=2
+            )
+        n_sessions_per_x_days_that_do_not_have_an_after_scales_and_done_session = \
+            get_n_sessions_per_x_days_that_do_not_have_an_after_scales_and_done_session(
+                self.conn, user, current_t, self.minus_time
+            )
+        n_different_exercises_per_x_samples = get_n_different_exercises_per_x_samples(self.conn, user, 14)
+        n_exercises_in_past_x_days = get_n_exercises_in_past_x_days(self.conn, user, 7, self.minus_time)
+        return True, user_sex, cs, current_unit, date_of_starting_unit, last_exercise_time, min_n_days_for_unit, min_n_exercises_for_unit, n_different_exercises_per_x_samples, n_exercises_from_current_unit, n_exercises_in_past_x_days, n_sessions_per_x_days_that_do_not_have_an_after_scales_and_done_session, number_of_days_in_unit_value, p_value, percentage_done_of_unit, should_be_unit, trend, within_or_between, x_days_from_T_is, x_days_from_current_t, x_sessions_back_with_y_session_where_after_is_higher_than_before_in_z_scales, total_excercises_of_unit

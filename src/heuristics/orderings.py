@@ -1,9 +1,11 @@
 def technique_order(technique):
-    if technique == 1:
+    # if technique == 1:
+    if technique <= 3:
         return 1
-    if technique in [2, 3]:
-        return 2
-    return 3
+    return 2
+    # if technique in [2, 3]:
+    #     return 2
+    # return 3
 
 
 def score_to_CS(score):
@@ -29,4 +31,4 @@ def score_pair_to_CS(score1, score2):
         return 5
     if score1 == 1 and score2 == 1:
         return 6
-    return -1
+    return 7

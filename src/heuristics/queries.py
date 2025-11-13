@@ -35,9 +35,9 @@ EXERCISES_OF_USER_QUERY = """
     WHERE e.userId = {user_id}
     GROUP BY e.actionId
     HAVING 
-        AVG(e.sudsQ1 > e.sudsQ2) >= {min_percent} AND 
-        AVG(e.fatigueQ1 > e.fatigueQ2) >= {min_percent} AND
-        AVG(e.vasQ1 > e.vasQ2) >= {min_percent}
+        AVG(CASE WHEN e.sudsQ2 <= e.sudsQ1 THEN 1.0 ELSE 0.0 END) >= {min_percent}
+        AND AVG(CASE WHEN e.fatigueQ2 <= e.fatigueQ1 THEN 1.0 ELSE 0.0 END) >= {min_percent}
+        AND AVG(CASE WHEN e.vasQ2 <= e.vasQ1 THEN 1.0 ELSE 0.0 END) >= {min_percent}
 """
 
 EXERCISES_OF_METRIC_FOR_USER_QUERY = """
