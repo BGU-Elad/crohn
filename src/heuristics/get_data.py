@@ -245,7 +245,7 @@ def get_current_t(conn, user, minus_time = MINUS_TIME):
     for t_i, t in enumerate(current_t):
         if t > now:
             break
-    return t_i, (t - now).days, [(t - now).days for t in current_t]
+    return t_i, (current_t[t_i-1] - now).days if t_i > 0 else None, [(t - now).days for t in current_t]
 
 
 def get_current_unit(conn, user):
@@ -521,13 +521,16 @@ def evaluate_trend(
 
 
 def get_last_time_message(conn, user, e, minus_time = MINUS_TIME):
-    query = LAST_TIME_MESSAGE_QUERY.format(user=user, e=e)
+    if e == -1:
+        query = LAST_MESSAGE_QUERY.format(user=user)
+    else:
+        query = LAST_TIME_MESSAGE_QUERY.format(user=user, e=e)
     conn.cur.execute(query)
     last_time = conn.cur.fetchone()
     if last_time is None:
         return BIG_DAYS
     last_time = datetime.strptime(last_time[0], DATE_FORMAT)
-    return (get_now(minus_time) - last_time).days
+    return (get_now(minus_time) - last_time).days+1
 
 
 def is_real_user(conn, user):

@@ -170,7 +170,15 @@ IS_REAL_USER_QUERY = """
 """
 
 LAST_TIME_MESSAGE_QUERY = """
-    SELECT date FROM History_bots WHERE userId = {user} AND rule = {e} ORDER BY date DESC LIMIT 1
+    SELECT date FROM History_bots WHERE userId = {user} AND EXISTS (
+    SELECT 1
+    FROM json_each(History_bots.rule)
+    WHERE json_each.value = {e}
+  ) ORDER BY date DESC LIMIT 1
+"""
+
+LAST_MESSAGE_QUERY = """
+    SELECT date FROM History_bots WHERE userId = {user} ORDER BY date DESC LIMIT 1
 """
 
 
@@ -186,7 +194,7 @@ TRENDS_QUERY = """
 """
 
 GET_N_EXERCISES_IN_PAST_X_DAYS = f"""
-    SELECT COUNT(distinct actionId) FROM Exercise WHERE userId = {{user}}
+    SELECT COUNT(actionId) FROM Exercise WHERE userId = {{user}}
     AND dateStart > date(date('now', '-{{minus_time}} days'), '-{{days}} days')
 """
 
@@ -195,7 +203,7 @@ GET_N_DIFFERENT_EXERCISES_PER_X_SAMPLES = """
 """
 
 N_SESSIONS_PER_X_DAYS_THAT_DO_NOT_HAVE_AN_AFTER_AND_DONE_SESSION = f"""
-SELECT endSession Is NULL FROM Session WHERE userId = {{user}}
+SELECT endSession Is NULL OR endSession = '00:00:00.000000' FROM Session WHERE userId = {{user}}
 AND startSession > date(date('now', '-{{minus_time}} days'), '-{{days}} days')
 """
 
