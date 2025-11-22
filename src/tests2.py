@@ -47,7 +47,7 @@ TEST_CASES = [
     # ("2", "24.06.2025", "../sensitive_data/tests/DB QA - rule 1 24.6- Female Morning FP(2).xlsx", "../sensitive_data/tests/acount and passwords.xlsx", None, None),
     # ("1", "24.06.2025", "../sensitive_data/tests/DB QA - rule 1 24.6- Female Morning stag within.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "STAG", WITHIN),
     # ("1", "25.06.2025", "../sensitive_data/tests/DB QA - rule 1 - improve within 25.6.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "INC", WITHIN),
-    # ("10", "24.06.2025", "../sensitive_data/tests/DB QA - rule 10 24.6- Female Morning DETER within.xlsx", "../sensitive_data/tests/acount and passwords2.xlsx", "DET", WITHIN),
+    ("10", "24.06.2025", "../sensitive_data/tests/DB QA - rule 10 24.6- Female Morning DETER within.xlsx", "../sensitive_data/tests/acount and passwords2.xlsx", "DET", WITHIN),
     # ("2", "25.06.2025", "../sensitive_data/tests/DB QA - rule 2 25.6 - Female Morning  improve NW.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "INC", BETWEEN),
     # ("-2", "25.06.2025", "../sensitive_data/tests/DB QA - rule 2 25.6 - Female Morning  stag within FP.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "STAG", WITHIN),
     # ("2", "25.06.2025", "../sensitive_data/tests/DB QA - rule 2 25.6- Male Evening improve NW.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "INC", BETWEEN),
@@ -195,7 +195,7 @@ TEST_CASES = [
     # ("76", "12.01.2025", "../sensitive_data/tests/DB QA - rule 76 -  18.01 -Male Morning DET.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "DET", None),
     # ("-76", "12.01.2025", "../sensitive_data/tests/DB QA MESSAGE 2 DAYS - rule 76 -  18.01 -Male Morning DET.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "DET", None),
     # ("-76", "12.01.2025", "../sensitive_data/tests/DB QA MESSAGE SAME - rule 76 -  18.01 -Male Morning DET.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "DET", None),
-    ("76", "13.01.2025", "../sensitive_data/tests/DB QA MESSAGE SAME LATER - rule 76 -  18.01 -Male Morning DET.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "DET", None),
+    # ("76", "13.01.2025", "../sensitive_data/tests/DB QA MESSAGE SAME LATER - rule 76 -  18.01 -Male Morning DET.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "DET", None),
 
 
 
@@ -247,7 +247,7 @@ def _check_rule_id(rule: str, rec_msg):
     try:
         if negative_number and len(rec_msg[1]) == 0: # should not be a specific rule, and got no rule - that is ok
             return
-        rec_rule = rec_msg[1][0]
+        rec_rule = rec_msg[1]#[0]
     except Exception as e:
         print("\t\t\t[WARN] Unexpected message shape; cannot read rule id:", e)
         return
@@ -267,16 +267,10 @@ def name_to_number(rule):
     return expected, negative_number
 
 
-def _check_sex_and_message_codes(rule: str, file: str, rec_msg):
+def _check_sex_and_message_codes(rule: str, file: str, rec_sex_code:str):
     sex = _sex_from_filename(file)
     if sex is None:
         return  # no sex encoded in filename -> nothing to validate
-
-    try:
-        rec_sex_code = rec_msg[2].lower()
-    except Exception as e:
-        print("\t\t\t[WARN] Unexpected message shape; cannot read sex code:", e)
-        return
 
     if rec_sex_code not in ("f", "m"):
         print("\t\t\t[WARN] sex code should be 'f' or 'm' but got", rec_sex_code)
@@ -338,9 +332,10 @@ def run_case(rule: str, date_str: str, file: str, T_file: str, trend: str, W_or_
 
     rec = _safe_rec(recommendations, REC_IDX)
     msg = rec.get("message") if isinstance(rec, dict) else rec
+    sex = rec.get("sex") if isinstance(rec, dict) else rec
 
     _check_rule_id(rule, msg)
-    _check_sex_and_message_codes(rule, file, msg)
+    _check_sex_and_message_codes(rule, file, sex.lower())
     recieved_trend = rec.get("trend") if isinstance(rec, dict) else rec
     _check_trend(trend, recieved_trend)
     _check_within_or_between(W_or_B, rec.get(WITHIN, None))
