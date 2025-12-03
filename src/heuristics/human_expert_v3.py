@@ -57,7 +57,7 @@ class HumanExpert:
             exercise_for_user[user[0]] = sorted_exercises
         return exercise_for_user
 
-    def second_carousal(self, metric: int, metric_percent: int = 0.80, other_percent: int = 0.40):
+    def second_carousal(self, metric: int, metric_percent: int = 0.80, other_percent: int = 0.60):
         users = get_users(self.conn)
         users = [user for user in users if int(user[1]) >= FREE_USER_LEVEL]
         exercise_for_user = {}
@@ -83,7 +83,7 @@ class HumanExpert:
             exercise_for_user[user[0]] = sorted_exercises
         return exercise_for_user
 
-    def third_carousal(self, days: int = 30, min_percent: float = 0.8):
+    def third_carousal(self, days: int = 30, min_percent: float = 0.5):
         users = get_users(self.conn)
         users = [user for user in users if int(user[1]) >= FREE_USER_LEVEL]
         exercise_for_user = {}
@@ -197,7 +197,7 @@ class HumanExpert:
             user = user[0]
             ok, user_sex, cs, current_unit, date_of_starting_unit, last_exercise_time, min_n_days_for_unit, min_n_exercises_for_unit, n_different_exercises_per_x_samples, n_exercises_from_current_unit, n_exercises_in_past_x_days, n_sessions_per_x_days_that_do_not_have_an_after_scales_and_done_session, number_of_days_in_unit_value, p_value, percentage_done_of_unit, should_be_unit, trend, within_or_between, x_days_from_T_is, x_days_from_current_t, x_sessions_back_with_y_session_where_after_is_higher_than_before_in_z_scales, total_excercises_of_unit = self.get_matrics_and_attributes(
                 user, user_to_trends)
-            print(n_exercises_from_current_unit)
+            # print(n_exercises_from_current_unit)
             user_to_message[user] = []
 
             if not ok:
@@ -386,6 +386,7 @@ class HumanExpert:
         for user in user_to_message:
             exercises = []
             for e in user_to_message[user]:
+                # exercises.append(e)
                 last = get_last_time_message(self.conn, user, e, self.minus_time)
                 last_overall_messsage = get_last_time_message(self.conn, user, -1, self.minus_time)
                 if last_overall_messsage >= 2 and last >= exercise_message_interval[e]:

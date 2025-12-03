@@ -5,7 +5,7 @@ import numpy as np
 from src.heuristics.human_expert_v3 import HumanExpert
 from src.db_handler.xl_database import ExcelSQL
 from src.utils.constants import MINUS_TIME, WITHIN, BETWEEN
-from src.utils.utils import get_now
+from src.utils.utils import get_now, time_minus_function
 import pandas as pd
 import csv
 
@@ -47,7 +47,7 @@ TEST_CASES = [
     # ("2", "24.06.2025", "../sensitive_data/tests/DB QA - rule 1 24.6- Female Morning FP(2).xlsx", "../sensitive_data/tests/acount and passwords.xlsx", None, None),
     # ("1", "24.06.2025", "../sensitive_data/tests/DB QA - rule 1 24.6- Female Morning stag within.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "STAG", WITHIN),
     # ("1", "25.06.2025", "../sensitive_data/tests/DB QA - rule 1 - improve within 25.6.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "INC", WITHIN),
-    ("10", "24.06.2025", "../sensitive_data/tests/DB QA - rule 10 24.6- Female Morning DETER within.xlsx", "../sensitive_data/tests/acount and passwords2.xlsx", "DET", WITHIN),
+    # ("10", "24.06.2025", "../sensitive_data/tests/DB QA - rule 10 24.6- Female Morning DETER within.xlsx", "../sensitive_data/tests/acount and passwords2.xlsx", "DET", WITHIN),
     # ("2", "25.06.2025", "../sensitive_data/tests/DB QA - rule 2 25.6 - Female Morning  improve NW.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "INC", BETWEEN),
     # ("-2", "25.06.2025", "../sensitive_data/tests/DB QA - rule 2 25.6 - Female Morning  stag within FP.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "STAG", WITHIN),
     # ("2", "25.06.2025", "../sensitive_data/tests/DB QA - rule 2 25.6- Male Evening improve NW.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "INC", BETWEEN),
@@ -83,7 +83,6 @@ TEST_CASES = [
     # ("14", "26.01.2025", "../sensitive_data/tests/DB QA - rule 14 - missing exc -  26.01 - Male Morning IMPRO.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "INC", None),
     # ("15", "26.01.2025", "../sensitive_data/tests/DB QA - rule 15 - missing exc  - 26.01 - Female Morning  ALL DETER.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "DET", None),
     # ("15", "26.01.2025", "../sensitive_data/tests/DB QA - rule 15 - missing exc  - 26.01 - Male Morning  ALL DETER.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "DET", None),
-    #
     # ("12", "18.01.2025", "../sensitive_data/tests/DB QA - rule 12 - didnt start next unit -  18.01 - Female Morning IMPRO.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "INC", None),
     # ("12", "18.01.2025", "../sensitive_data/tests/DB QA - rule 12 - didnt start next unit -  18.01 - Female Morning STAG.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "STAG", None),
     # ("12", "18.01.2025", "../sensitive_data/tests/DB QA - rule 12 - didnt start next unit -  18.01 - Male  Morning IMPRO.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "INC", None),
@@ -93,7 +92,6 @@ TEST_CASES = [
     # ("16", "25.01.2025", "../sensitive_data/tests/DB QA - rule 16 - missing exc -  25.01 - Male Morning STAG.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "STAG", None),
     # ("17", "25.01.2025", "../sensitive_data/tests/DB QA - rule 17 - missing exc -  25.01 - Male Morning ALL DETER.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "DET", None),
     # ("12", "20.01.2025", "../sensitive_data/tests/DB QA - rule 12 - missing exc 2nd time message -  20.01 - Male Morning IMPRO.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "INC", None),
-    #
     # ("18", "07.02.2025", "../sensitive_data/tests/DB QA - rule 18 - missing exc -  07.02 - Female Morning IMPRO.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "INC", None),
     # ("18", "07.02.2025", "../sensitive_data/tests/DB QA - rule 18 - missing exc -  07.02 - Female Morning STAG.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "STAG", None),
     # ("18", "07.02.2025", "../sensitive_data/tests/DB QA - rule 18 - missing exc -  07.02 - Male Morning IMPRO.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "INC", None),
@@ -106,58 +104,46 @@ TEST_CASES = [
     # ("20", "07.02.2025", "../sensitive_data/tests/DB QA - rule 20 - missing exc -  07.02 - Male Morning STAG.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "STAG", None),
     # ("21", "07.02.2025", "../sensitive_data/tests/DB QA - rule 21 - missing exc -  07.02 - Female Morning DET.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "DET", None),
     # ("21", "07.02.2025", "../sensitive_data/tests/DB QA - rule 21 - missing exc -  07.02 - Male Morning DET.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "DET", None),
-    # ("22", "07.02.2025", "../sensitive_data/tests/DB QA - rule 22 - missing exc -  07.02 - Female Morning IMPRO.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "INC", None),
-    # ("22", "07.02.2025", "../sensitive_data/tests/DB QA - rule 22 - missing exc -  07.02 - Female Morning STAG.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "STAG", None),
-    # ("22", "07.02.2025", "../sensitive_data/tests/DB QA - rule 22 - missing exc -  07.02 - Male Morning IMPRO.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "INC", None),
-    # ("22", "07.02.2025", "../sensitive_data/tests/DB QA - rule 22 - missing exc -  07.02 - Male Morning STAG.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "STAG", None),
-    # ("23", "07.02.2025", "../sensitive_data/tests/DB QA - rule 23 - missing exc -  07.02 - Female Morning DET.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "DET", None),
-    # ("23", "07.02.2025", "../sensitive_data/tests/DB QA - rule 23 - missing exc -  07.02 - Male Morning DET.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "DET", None),
+    # ("22", "08.02.2025", "../sensitive_data/tests/DB QA - rule 22 - missing exc -  07.02 - Female Morning IMPRO.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "INC", None),
+    # ("22", "08.02.2025", "../sensitive_data/tests/DB QA - rule 22 - missing exc -  07.02 - Female Morning STAG.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "STAG", None),
+    # ("22", "08.02.2025", "../sensitive_data/tests/DB QA - rule 22 - missing exc -  07.02 - Male Morning IMPRO.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "INC", None),
+    # ("22", "08.02.2025", "../sensitive_data/tests/DB QA - rule 22 - missing exc -  07.02 - Male Morning STAG.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "STAG", None),
+    # ("23", "08.02.2025", "../sensitive_data/tests/DB QA - rule 23 - missing exc -  07.02 - Female Morning DET.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "DET", None),
+    # ("23", "08.02.2025", "../sensitive_data/tests/DB QA - rule 23 - missing exc -  07.02 - Male Morning DET.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "DET", None),
     # ("26", "18.01.2025", "../sensitive_data/tests/DB QA - rule 26 - missing exc -  18.01 - Male Morning DET.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "DET", None),
     # ("26", "03.03.2025", "../sensitive_data/tests/DB QA - rule 26 - future -  03.03 - Male Morning DET.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "DET", None),
     # ("26", "18.01.2025", "../sensitive_data/tests/DB QA - rule 26 - missing exc -  18.01 - Female Morning DET.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "DET", None),
-
     # ("15", "23.01.2025", "../sensitive_data/tests/DB QA - rule 66 but rule 15 -  18.01 -Male Morning DET.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "DET", None),
-    # TODO add a test for messages limit
-
     # ("24", "18.01.2025", "../sensitive_data/tests/DB QA - rule 24 - unit 1 -  18.01 - Male Morning.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "DET", None),
     # ("-24", "18.01.2025", "../sensitive_data/tests/DB QA - rule -24 - unit -2 but not enough from units-  18.01 - Male Morning.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "DET", None),
     # ("24", "18.01.2025", "../sensitive_data/tests/DB QA - rule 24 - unit 2 -  18.01 - Male Morning.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "DET", None),
     # ("24", "18.01.2025", "../sensitive_data/tests/DB QA - rule 24 - unit 3 -  18.01 - Male Morning.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "DET", None),
     # ("25", "18.01.2025", "../sensitive_data/tests/DB QA - rule 24 - unit 4 -  18.01 - Male Morning.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "DET", None),
-
-
-
-
     # ("28", "10.02.2025", "../sensitive_data/tests/DB QA - rule 28 -  18.01 - Male Morning.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "DET", None),
     # ("29", "10.04.2025", "../sensitive_data/tests/DB QA - rule 28 -  18.01 - Male Morning.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "DET", None),
     # ("30", "10.05.2025", "../sensitive_data/tests/DB QA - rule 28 -  18.01 - Male Morning.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "DET", None),
     # ("31", "08.02.2025", "../sensitive_data/tests/DB QA - rule 29 -  18.01 - Male Morning IMP.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "INC", None),
     # ("31", "08.02.2025", "../sensitive_data/tests/DB QA - rule 29 -  18.01 - Male Morning STAG.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "STAG", None),
     # ("32", "08.02.2025", "../sensitive_data/tests/DB QA - rule 29 -  18.01 - Male Morning.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "DET", None),
-
     # ("33", "12.02.2025", "../sensitive_data/tests/DB QA - rule 33 -  18.01 - Male Morning STAG.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "STAG", None),
     # ("34", "13.02.2025", "../sensitive_data/tests/DB QA - rule 34 -  18.01 - Male Morning STAG.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "STAG", None),
     # ("35", "27.01.2025", "../sensitive_data/tests/DB QA - rule 35 -  18.01 - Male Morning STAG.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "STAG", None),
     # ("36", "13.02.2025", "../sensitive_data/tests/DB QA - rule 36 -  18.01 - Male Morning STAG.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "STAG", None),
     # ("37", "13.02.2025", "../sensitive_data/tests/DB QA - rule 37 -  18.01 - Male Morning STAG.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "STAG", None),
-    #
     # ("38", "08.02.2025", "../sensitive_data/tests/DB QA - rule 38 -  18.01 -  3-1 Male Morning IMP.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "INC", None),
     # ("38", "08.02.2025", "../sensitive_data/tests/DB QA - rule 38 -  18.01 -  3-2 Male Morning IMP.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "INC", None),
     # ("39", "08.02.2025", "../sensitive_data/tests/DB QA - rule 39 -  18.01 -  2-1 Male Morning IMP.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "INC", None),
-    #
     # ("40", "08.02.2025", "../sensitive_data/tests/DB QA - rule 40 -  18.01 -  2-1 Male Morning DET.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "DET", None),
     # ("41", "08.02.2025", "../sensitive_data/tests/DB QA - rule 41 -  18.01 -  2-1 Male Morning DET.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "DET", None),
     # ("42", "08.02.2025", "../sensitive_data/tests/DB QA - rule 42 -  18.01 -  2-1 Male Morning DET.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "DET", None),
     # ("43", "08.02.2025", "../sensitive_data/tests/DB QA - rule 43 -  18.01 -  2-3 Male Morning DET.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "DET", None),
     # ("43", "08.02.2025", "../sensitive_data/tests/DB QA - rule 43 -  18.01 -  1-3 Male Morning DET.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "DET", None),
     # ("44", "08.02.2025", "../sensitive_data/tests/DB QA - rule 44 -  18.01 -  2-1 Male Morning DET.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "DET", None),
-
     # ("45", "01.02.2025", "../sensitive_data/tests/DB QA - rule 44 -  18.01 -  2-1 Male Morning STEG.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "STAG", None),
     # ("46", "05.02.2025", "../sensitive_data/tests/DB QA - rule 44 -  18.01 -  2-1 Male Morning STEG.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "STAG", None),
     # ("47", "13.02.2025", "../sensitive_data/tests/DB QA - rule 47 -  18.01 -  2-1 Male Morning STEG.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "STAG", None),
     # ("48", "19.03.2025", "../sensitive_data/tests/DB QA - rule 44 -  18.01 -  2-1 Male Morning STEG.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "STAG", None),
     # ("49", "26.04.2025", "../sensitive_data/tests/DB QA - rule 44 -  18.01 -  2-1 Male Morning STEG.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "STAG", None),
-
     # ("50", "12.01.2025", "../sensitive_data/tests/DB QA - rule 50 -  18.01 -  2-1 Male Morning STEG.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "STAG", None),
     # ("51", "12.01.2025", "../sensitive_data/tests/DB QA - rule 51 -  18.01 -  2-1 Male Morning STEG.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "STAG", None),
     # ("51", "12.01.2025", "../sensitive_data/tests/DB QA - rule 51 -  18.01 - 3-3 Male Morning STEG.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "STAG", None),
@@ -189,13 +175,13 @@ TEST_CASES = [
     # ("72", "17.01.2025", "../sensitive_data/tests/DB QA - rule 72 -  18.01 -Male Morning STAG.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "STAG", None),
     # ("73", "19.01.2025", "../sensitive_data/tests/DB QA - rule 73 -  18.01 -Male Morning STAG.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "STAG", None),
     # ("74", "29.01.2025", "../sensitive_data/tests/DB QA - rule 74 -  18.01 -Male Morning STAG.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "STAG", None),
-
     # ("75", "12.01.2025", "../sensitive_data/tests/DB QA - rule 75 -  18.01 -Male Morning DET.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "DET", None),
-
     # ("76", "12.01.2025", "../sensitive_data/tests/DB QA - rule 76 -  18.01 -Male Morning DET.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "DET", None),
+
+
     # ("-76", "12.01.2025", "../sensitive_data/tests/DB QA MESSAGE 2 DAYS - rule 76 -  18.01 -Male Morning DET.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "DET", None),
     # ("-76", "12.01.2025", "../sensitive_data/tests/DB QA MESSAGE SAME - rule 76 -  18.01 -Male Morning DET.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "DET", None),
-    # ("76", "13.01.2025", "../sensitive_data/tests/DB QA MESSAGE SAME LATER - rule 76 -  18.01 -Male Morning DET.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "DET", None),
+    # # ("76", "13.01.2025", "../sensitive_data/tests/DB QA MESSAGE SAME LATER - rule 76 -  18.01 -Male Morning DET.xlsx", "../sensitive_data/tests/account and passwords3.xlsx", "DET", None),
 
 
 
@@ -203,6 +189,12 @@ TEST_CASES = [
     # ("0", "09.11.2025", "../sensitive_data/tests/DB QA - carousel 1 test cs2-cs1.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "DET", None),
     # ("0", "09.11.2025", "../sensitive_data/tests/DB QA - carousel 1 test cs2-cs1 evening.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "DET", None),
     # ("0", "09.11.2025", "../sensitive_data/tests/DB QA - carousel 1 test 3 evening.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "DET", None),
+    # ("0", "09.11.2025", "../sensitive_data/tests/DB QA - carousel 2.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "DET", None),
+    # ("0", "09.11.2025", "../sensitive_data/tests/DB QA - carousel 2 all.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "INC", None),
+    # ("0", "09.11.2025", "../sensitive_data/tests/DB QA - carousel 2 - retest sud.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "INC", None),
+    # ("0", "20.02.2025", "../sensitive_data/tests/DB QA - carousel 3 20.2.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "INC", None),
+    # ("0", "20.04.2025", "../sensitive_data/tests/DB QA - carousel 4  20.4 all deter + stag + 92 3 3 months.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "DET", None),
+    # ("0", "20.04.2025", "../sensitive_data/tests/DB QA - carousel 4  20.4 all deter + stag + 21 stag+ 42 all cs1.xlsx", "../sensitive_data/tests/acount and passwords_T2.xlsx", "DET", None),
 
 
 
@@ -245,7 +237,7 @@ def _check_rule_id(rule: str, rec_msg):
         return
 
     try:
-        if negative_number and len(rec_msg[1]) == 0: # should not be a specific rule, and got no rule - that is ok
+        if negative_number and rec_msg[1] == -1: # should not be a specific rule, and got no rule - that is ok
             return
         rec_rule = rec_msg[1]#[0]
     except Exception as e:
@@ -326,6 +318,9 @@ def run_case(rule: str, date_str: str, file: str, T_file: str, trend: str, W_or_
     exec_sql.create_table()
 
     minus_days = (get_now(0).date() - datetime.strptime(date_str, "%d.%m.%Y").date()).days
+    minus_days2 = time_minus_function(0, date_str)
+    assert minus_days == minus_days2, f"minus_days mismatch: {minus_days} != {minus_days2}"
+
     he = HumanExpert(exec_sql, minus_days)
     expected, negative_number = name_to_number(rule)
     recommendations = he.recommend(DEBUG=True, message_limit= expected+5 )

@@ -25,8 +25,11 @@ def get_first_or_empty(lst):
     return lst[0]
 
 
+def time_minus_function(minus, str_time):
+    return (get_now(minus).date() - datetime.datetime.strptime(str_time, "%d.%m.%Y").date()).days
+
 def get_now(minus=MINUS_TIME):
-    return datetime.datetime.now() - datetime.timedelta(days=minus)
+    return datetime.datetime.now() - datetime.timedelta(days=minus-1)
 
 
 class ExerciseData:

@@ -56,9 +56,9 @@ EXERCISES_OF_METRIC_FOR_USER_QUERY = """
     WHERE e.userId = {user_id}
     GROUP BY e.actionId
     HAVING 
-        AVG(e.sudsQ1 > e.sudsQ2) >= {suds_percent} AND 
-        AVG(e.fatigueQ1 > e.fatigueQ2) >= {fatigue_percent} AND
-        AVG(e.vasQ1 > e.vasQ2) >= {vas_percent}
+        AVG(e.sudsQ1 {suds_direction} e.sudsQ2) >= {suds_percent} AND 
+        AVG(e.fatigueQ1 {fat_direction} e.fatigueQ2) >= {fatigue_percent} AND
+        AVG(e.vasQ1 {vas_direction} e.vasQ2) >= {vas_percent}
 """
 
 
@@ -84,64 +84,142 @@ FORGOTTEN_EXERCISES_OF_USER_QUERY = f"""
      WHERE e.userId = {{user_id}}
      GROUP BY e.actionId
      HAVING 
-         AVG(e.sudsQ1 > e.sudsQ2) >= {{min_percent}} AND 
-         AVG(e.fatigueQ1 > e.fatigueQ2) >= {{min_percent}} AND
-         AVG(e.vasQ1 > e.vasQ2) >= {{min_percent}}
+         AVG(e.sudsQ1 >= e.sudsQ2) >= {{min_percent}} AND 
+         AVG(e.fatigueQ1 >= e.fatigueQ2) >= {{min_percent}} AND
+         AVG(e.vasQ1 >= e.vasQ2) >= {{min_percent}}
 """
 
 
 FOURTH_CARUSAL_EXERCISE_OF_USER_QUERY = f"""
 WITH
+
+cutoff AS (
+    -- simulated "today" = now - {{minus_time}} days
+    -- cutoff = simulated_today - 60 days
+    SELECT date(date('now', '-{{minus_time}} days'), '-{{days}} days') AS cutoff_date
+),
+-- last exercise per (technique, action) for this user
+action_last AS (
+    SELECT
+        ta.'מספר טכניקה' as techniqueId,
+        ta.'מספר הפעולה' as actionId,
+        MAX(date(e.dateStart)) AS last_date
+    FROM actions AS ta
+    LEFT JOIN Exercise AS e
+           ON e.actionId = ta.'מספר הפעולה'
+          AND e.userId  = {{user_id}}
+    WHERE e.dateStart IS NOT NULL
+    GROUP BY ta.'מספר הפעולה', ta.'מספר טכניקה'
+),
+
+-- count, per technique, how many actions were exercised in the last 60 days
+tech_stats AS (
+    SELECT
+        al.techniqueId as techniqueId,
+        COUNT(*) AS num_actions,
+        SUM(
+            CASE
+                WHEN al.last_date >= (SELECT cutoff_date FROM cutoff)
+                THEN 1
+                ELSE 0
+            END
+        ) AS num_recent,
+        SUM(al.last_date IS NOT NULL) AS num_ever_exercised
+    FROM action_last AS al
+    GROUP BY al.techniqueId
+), 
+not_exercised AS (
+    SELECT ts.techniqueId AS technique
+    FROM techniques AS t
+    JOIN tech_stats AS ts
+          ON ts.techniqueId = t.'מספר טכניקה'
+    WHERE ts.num_recent = 0 and ts.num_actions > 0
+),
+
+
     tutorial_actions AS (
         SELECT a.'מספר הפעולה' AS action, a.'מספר טכניקה' AS technique FROM actions AS a WHERE a.'סוג פעולה' = 'G'
     ),
-    exercised_in_the_pas_k_days AS (
-        SELECT actionId, a.'מספר טכניקה' as technique, SUBSTR(a.'מספר סידורי'
-          , 1, INSTR(a.'מספר סידורי'
-          , ".") +INSTR(SUBSTR(a.'מספר סידורי'
-          , INSTR(a.'מספר סידורי'
-          , ".")+1), ".")) AS parent_serial
-        FROM Exercise JOIN actions as a ON actionId = a.'מספר הפעולה'  WHERE userId = {{user_id}} 
-        AND dateStart > date(date('now', '-{{minus_time}} days'), '-{{days}} days')
-        AND a.'סוג פעולה' != 'T' 
-        AND a.'סוג פעולה' != 'G' 
-    ),
-    tutrial_of_exercised AS (
-        SELECT  a.'מספר הפעולה' as action
-        FROM actions AS a, exercised_in_the_pas_k_days as e
-        WHERE e.parent_serial = a.'מספר סידורי'                    
-    ),
-    not_exercised AS (
-        SELECT ta.action, ta.technique FROM tutorial_actions as ta
-        WHERE ta.action NOT IN tutrial_of_exercised
-    ),
-    exersice_to_scores AS (
-        SELECT e.userId, e.actionId, q1.suds_stress as sudsQ1, q2.suds_stress as sudsQ2, q1.fatigue AS fatigueQ1,
-        q2.fatigue AS fatigueQ2, q1.vas_pain AS vasQ1, q2.vas_pain AS vasQ2 
-        FROM Exercise as e, Questionnaire as q1, Questionnaire as q2
-        WHERE e.questionnaireLastId != 0 
-        AND e.questionnairePrimerId = q1.questionnaireId
-        AND e.questionnaireLastId = q2.questionnaireId
-        AND q1.userId = {{user_id}} 
---                     AND e.dateStart > date(date('now', '-{{minus_time}} days'), '-{{days}} days')
-    ),
-    deteriorations AS (
-        SELECT  e.actionId,
---                     t.technique as technique
-           t.'מספר טכניקה' as technique
-         FROM exersice_to_scores AS e
---                      JOIN exercised_in_the_pas_k_days as t on e.actionId= t.actionId
-         JOIN actions as t on e.actionId= t.'מספר הפעולה'
-         WHERE e.userId = {{user_id}}  
-         GROUP BY e.actionId
-         HAVING 
-             AVG(e.sudsQ1 > e.sudsQ2) < {{deterior}} AND 
-             AVG(e.fatigueQ1 > e.fatigueQ2) < {{deterior}} AND
-             AVG(e.vasQ1 > e.vasQ2) < {{deterior}}
-    ),
-    combined AS (SELECT technique FROM deteriorations UNION SELECT technique FROM not_exercised)
-    SELECT DISTINCT technique FROM combined
-        """
+    
+exersice_to_scores AS (
+    SELECT *
+    FROM (
+        SELECT
+            e.userId,
+            e.actionId,
+            q1.suds_stress AS sudsQ1,
+            q2.suds_stress AS sudsQ2,
+            q1.fatigue     AS fatigueQ1,
+            q2.fatigue     AS fatigueQ2,
+            q1.vas_pain    AS vasQ1,
+            q2.vas_pain    AS vasQ2,
+            ROW_NUMBER() OVER (
+                PARTITION BY e.actionId
+                ORDER BY e.dateStart DESC      -- last exercises
+            ) AS rn
+        FROM Exercise AS e
+        JOIN Questionnaire AS q1
+            ON e.questionnairePrimerId = q1.questionnaireId
+        JOIN Questionnaire AS q2
+            ON e.questionnaireLastId = q2.questionnaireId
+        WHERE e.questionnaireLastId != 0
+          AND q1.userId = {{user_id}}
+    )
+    WHERE rn <= {{examples}}            -- {{examples}} last EXERCISES per action
+),
+
+deteriorations AS (
+    SELECT
+        e.actionId,
+        t.'מספר טכניקה' AS technique
+    FROM exersice_to_scores AS e
+    JOIN actions AS t
+        ON e.actionId = t.'מספר הפעולה'
+    WHERE e.userId = {{user_id}}
+    GROUP BY e.actionId
+    HAVING
+        AVG(
+            CASE
+                WHEN e.sudsQ1 = e.sudsQ2
+                 AND e.fatigueQ1 = e.fatigueQ2
+                 AND e.vasQ1 = e.vasQ2
+                 AND e.vasQ1 <= 3 -- largest value in SC0
+                 AND e.fatigueQ1 <= 3 -- largest value in SC0
+                 AND e.vasQ1 <= 3 -- largest value in SC0
+                THEN 1
+                ELSE (e.sudsQ1 > e.sudsQ2)
+            END
+        ) < {{deterior}}
+    AND
+        AVG(
+            CASE
+                WHEN e.sudsQ1 = e.sudsQ2
+                 AND e.fatigueQ1 = e.fatigueQ2
+                 AND e.vasQ1 = e.vasQ2
+                 AND e.vasQ1 <= 3 -- largest value in SC0
+                 AND e.fatigueQ1 <= 3 -- largest value in SC0
+                 AND e.vasQ1 <= 3 -- largest value in SC0
+                THEN 1
+                ELSE (e.fatigueQ1 > e.fatigueQ2)
+            END
+        ) < {{deterior}}
+    AND
+        AVG(
+            CASE
+                WHEN e.sudsQ1 = e.sudsQ2
+                 AND e.fatigueQ1 = e.fatigueQ2
+                 AND e.vasQ1 = e.vasQ2
+                 AND e.vasQ1 <= 3 -- largest value in SC0
+                 AND e.fatigueQ1 <= 3 -- largest value in SC0
+                 AND e.vasQ1 <= 3 -- largest value in SC0
+                THEN 1
+                ELSE (e.vasQ1 > e.vasQ2)
+            END
+        ) < {{deterior}}
+),
+    combined AS (SELECT technique, 0 AS reason FROM deteriorations UNION SELECT technique, 1 AS reason FROM not_exercised)
+    SELECT ta.action, c.* FROM combined AS c JOIN tutorial_actions AS ta ON c.technique = ta.technique
+"""
 
 ID_TO_MESSAGE_QUERY = """
     SELECT r.'Msg1 - Male', r.'Msg2 - Male', r.'Msg3 - Male', r.'Msg1 - Female', r.'Msg2 - Female', r.'Msg3 - Female'

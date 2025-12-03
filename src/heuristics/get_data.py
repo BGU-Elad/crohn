@@ -105,26 +105,32 @@ def get_exercise_of_user(conn, user_id: int, time: int, user_hour: str, min_perc
 
 
 def get_exercise_for_metric_of_user(conn, user_id: int, metric: int, metric_percent: int = 0.80,
-                                    other_percent: int = 0.40, minus_time=MINUS_TIME):
+                                    other_percent: int = 0.60, minus_time=MINUS_TIME):
     levels = get_level_of_current_exercise(conn, user_id, minus_time=minus_time)
     suds_percent = fatigue_percent = vas_percent = other_percent
     before = after = ""
+    suds_direction = fat_direction = vas_direction = ">="
     if metric == SUDS:
         suds_percent = metric_percent
         before = "sudsQ1"
         after = "sudsQ2"
+        suds_direction = ">"
     if metric == FATIGUE:
         fatigue_percent = metric_percent
         before = "fatigueQ1"
         after = "fatigueQ2"
+        fat_direction = ">"
     if metric == VAS:
         vas_percent = metric_percent
         before = "vasQ1"
         after = "vasQ2"
+        vas_direction = ">"
 
     query = EXERCISES_OF_METRIC_FOR_USER_QUERY.format(user_id=user_id, before=before, after=after,
                                                       suds_percent=suds_percent,
-                                                      fatigue_percent=fatigue_percent, vas_percent=vas_percent)
+                                                      fatigue_percent=fatigue_percent, vas_percent=vas_percent,
+                                                      suds_direction=suds_direction, fat_direction=fat_direction,
+                                                      vas_direction=vas_direction)
 
     conn.cur.execute(query)
     exercises = conn.cur.fetchall()
@@ -138,17 +144,20 @@ def get_exercise_for_metric_of_user(conn, user_id: int, metric: int, metric_perc
 
         relative_delta = relative_deltas_met[met_max_index]
         relative_delta_count = len(relative_deltas_met[relative_deltas_met == relative_delta])
+        score_count = sum(max_met == ms for ms in met_scores)
+
         exercises_dict[exercise[0]] = ExerciseData(
             exercise=exercise[0],
             change=max_met,
             relative_delta=relative_delta,
+            score_count=score_count,
             count=relative_delta_count,
             in_out_unit=exercise[0] in levels
         )
     return exercises_dict
 
 
-def get_forgotten_exercise_of_user(conn, user_id: int, days: int = 30, min_percent: float = 0.8, minus_time=MINUS_TIME):
+def get_forgotten_exercise_of_user(conn, user_id: int, days: int = 30, min_percent: float = 0.5, minus_time=MINUS_TIME):
     query = FORGOTTEN_EXERCISES_OF_USER_QUERY.format(user_id=user_id, days=days, min_percent=min_percent, minus_time=minus_time)
     conn.cur.execute(query)
     exercises = conn.cur.fetchall()
@@ -162,15 +171,26 @@ def get_forgotten_exercise_of_user(conn, user_id: int, days: int = 30, min_perce
     return exercises_dict
 
 
-def get_fourth_carousal_exercise_of_user(conn, user_id, days=60, deteriorate=0.5, minus_time=MINUS_TIME):
-    query = FOURTH_CARUSAL_EXERCISE_OF_USER_QUERY.format(user_id=user_id, days=days, deterior=deteriorate, minus_time=minus_time)
+def get_fourth_carousal_exercise_of_user(conn, user_id, days=60, examples=3, deteriorate=0.5, minus_time=MINUS_TIME):
+    query = FOURTH_CARUSAL_EXERCISE_OF_USER_QUERY.format(user_id=user_id, days=days, examples=examples, deterior=deteriorate, minus_time=minus_time)
     conn.cur.execute(query)
     exercises = conn.cur.fetchall()
-    exercises = [e for e in exercises]
+    exercises = [e[0] for e in exercises]
+    exercises = list(set(exercises))
+
+
+    # query = TECHNIQUE_NOT_EXERCISED_IN_LAST_DAYS_QUERY.format(user_id=user_id, days=days, deterior=0.5, minus_time=minus_time)
+    # conn.cur.execute(query)
+    # fourth_exercises = conn.cur.fetchall()
+    # fourth_exercises = [e[0] for e in fourth_exercises]
+    #
+    # exercises = list(set(fourth_exercises + exercises))
+
+
     exercises_dict = {}
     for exercise in exercises:
-        exercises_dict[exercise[0]] = {
-            "exercise": exercise[0],
+        exercises_dict[exercise] = {
+            "exercise": exercise,
         }
     return exercises_dict
 
