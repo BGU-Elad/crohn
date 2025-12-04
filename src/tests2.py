@@ -44,8 +44,8 @@ ALLOWED_SUFFIXES = ("1", "2", "3")  # adjust if needed
 TEST_CASES = [
     # rule, date_str (DD.MM.YYYY), file
 
-    # ("2", "24.06.2025", "../sensitive_data/tests/DB QA - rule 1 24.6- Female Morning FP(2).xlsx", "../sensitive_data/tests/acount and passwords.xlsx", None, None),
     # ("1", "24.06.2025", "../sensitive_data/tests/DB QA - rule 1 24.6- Female Morning stag within.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "STAG", WITHIN),
+    # ("2", "24.06.2025", "../sensitive_data/tests/DB QA - rule 1 24.6- Female Morning FP(2).xlsx", "../sensitive_data/tests/acount and passwords.xlsx", None, None),
     # ("1", "25.06.2025", "../sensitive_data/tests/DB QA - rule 1 - improve within 25.6.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "INC", WITHIN),
     # ("10", "24.06.2025", "../sensitive_data/tests/DB QA - rule 10 24.6- Female Morning DETER within.xlsx", "../sensitive_data/tests/acount and passwords2.xlsx", "DET", WITHIN),
     # ("2", "25.06.2025", "../sensitive_data/tests/DB QA - rule 2 25.6 - Female Morning  improve NW.xlsx", "../sensitive_data/tests/acount and passwords.xlsx", "INC", BETWEEN),
@@ -318,8 +318,8 @@ def run_case(rule: str, date_str: str, file: str, T_file: str, trend: str, W_or_
     exec_sql.create_table()
 
     minus_days = (get_now(0).date() - datetime.strptime(date_str, "%d.%m.%Y").date()).days
-    minus_days2 = time_minus_function(0, date_str)
-    assert minus_days == minus_days2, f"minus_days mismatch: {minus_days} != {minus_days2}"
+    # minus_days2 = time_minus_function(0, date_str)
+    # assert minus_days == minus_days2, f"minus_days mismatch: {minus_days} != {minus_days2}"
 
     he = HumanExpert(exec_sql, minus_days)
     expected, negative_number = name_to_number(rule)

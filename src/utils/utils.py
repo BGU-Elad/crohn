@@ -26,11 +26,14 @@ def get_first_or_empty(lst):
 
 
 def time_minus_function(minus, str_time):
-    return (get_now(minus).date() - datetime.datetime.strptime(str_time, "%d.%m.%Y").date()).days
+    return (get_now(minus).date() - datetime.datetime.strptime(str_time, "%d.%m.%Y").date()).days -1
 
 def get_now(minus=MINUS_TIME):
-    return datetime.datetime.now() - datetime.timedelta(days=minus-1)
+    return datetime.datetime.now() - datetime.timedelta(days=minus)
 
+
+def diff_in_days(last_exercise_time, minus_time=MINUS_TIME):
+    return (get_now(minus_time).date() - last_exercise_time.date()).days-1
 
 class ExerciseData:
     def __init__(self, exercise=None, technique=None, change=None, relative_delta=None, count=None, in_out_unit=None, score_count=None):

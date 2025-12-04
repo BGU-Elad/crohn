@@ -312,7 +312,7 @@ SELECT startLevel FROM PositionLevel WHERE userId = {user} AND levelId = {unit}
 """
 
 LAST_EXERCISE_DATE_QUERY = """
-        SELECT dateStart FROM Exercise WHERE userId = {user} ORDER BY dateStart DESC LIMIT 1
+        SELECT dateEnd FROM Exercise WHERE userId = {user} and dateEnd IS NOT NULL ORDER BY dateStart DESC LIMIT 1
     """
 
 

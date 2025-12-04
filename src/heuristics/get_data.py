@@ -302,10 +302,11 @@ def get_time_since_starting_unit(conn, user, unit, minus_time = MINUS_TIME):
         start_date = conn.cur.fetchone()
     if start_date is None:
         return -1, None
-    cleaned = start_date[0].split('.')[0]
+    # cleaned = start_date[0].split('.')[0]
+    cleaned = start_date[0]
     start_date = datetime.strptime(cleaned, DATE_FORMAT)
     now = get_now(minus_time)
-    return (now - start_date).days, start_date
+    return (now - start_date), start_date
 
 
 def get_last_exercise_date(conn, user):
