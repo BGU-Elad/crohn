@@ -21,7 +21,7 @@ def take_two_from_each_cycle(lists):
 
 def get_first_or_empty(lst):
     if lst is None or len(lst) == 0:
-        return ['']
+        return ''
     return lst[0]
 
 

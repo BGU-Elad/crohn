@@ -250,13 +250,13 @@ IS_REAL_USER_QUERY = """
 LAST_TIME_MESSAGE_QUERY = """
     SELECT date FROM History_bots WHERE userId = {user} AND EXISTS (
     SELECT 1
-    FROM json_each(History_bots.rule)
-    WHERE json_each.value = {e}
+    FROM History_bots
+    WHERE rule = {e}
   ) ORDER BY date DESC LIMIT 1
 """
 
 LAST_MESSAGE_QUERY = """
-    SELECT date FROM History_bots WHERE userId = {user} ORDER BY date DESC LIMIT 1
+    SELECT date FROM History_bots WHERE userId = {user} and rule IS NOT NULL ORDER BY date DESC LIMIT 1
 """
 
 

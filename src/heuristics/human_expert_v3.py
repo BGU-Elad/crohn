@@ -122,7 +122,7 @@ class HumanExpert:
             exercise_for_user[user[0]] = sorted_exercises
         return exercise_for_user
 
-    def recommend(self, time: Optional[int] = 0, DEBUG: bool = False, message_limit: int = 16):
+    def recommend(self, time: Optional[int] = 0, DEBUG: bool = False, message_limit: int = 100):
         assert time in [0, 1], "time 0 is morning and time 1 is evening"
         first_carousal = self.first_carousal(MORNING)
         first2_carousal = self.first_carousal(EVENING)
