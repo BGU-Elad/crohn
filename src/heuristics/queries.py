@@ -248,11 +248,8 @@ IS_REAL_USER_QUERY = """
 """
 
 LAST_TIME_MESSAGE_QUERY = """
-    SELECT date FROM History_bots WHERE userId = {user} AND EXISTS (
-    SELECT 1
-    FROM History_bots
-    WHERE rule = {e}
-  ) ORDER BY date DESC LIMIT 1
+    SELECT hb.date FROM History_bots as hb WHERE userId = {user} AND rule = {e}
+    ORDER BY date DESC LIMIT 1
 """
 
 LAST_MESSAGE_QUERY = """
