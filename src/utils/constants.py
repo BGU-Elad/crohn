@@ -21,3 +21,7 @@ BETWEEN = 1
 MINUS_TIME = 0
 MALE = 'M'
 FEMALE = "F"
+
+GROUP_C = "C"
+GROUP_E = "E"
+GROUP_RT = "RT"

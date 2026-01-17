@@ -277,6 +277,10 @@ GET_N_DIFFERENT_EXERCISES_PER_X_SAMPLES = """
     SELECT COUNT(distinct actionId) FROM Exercise WHERE userId = {user} ORDER BY dateStart DESC LIMIT {samples}
 """
 
+GET_GROUP_TYPE_QUERY = f"""
+SELECT groupType FROM App_user WHERE id = {{user}}
+"""
+
 N_SESSIONS_PER_X_DAYS_THAT_DO_NOT_HAVE_AN_AFTER_AND_DONE_SESSION = f"""
 SELECT endSession Is NULL OR endSession = '00:00:00.000000' FROM Session WHERE userId = {{user}}
 AND startSession > date(date('now', '-{{minus_time}} days'), '-{{days}} days')

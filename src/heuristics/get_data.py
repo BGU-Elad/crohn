@@ -385,6 +385,11 @@ def get_n_different_exercises_per_x_samples(conn, user, samples):
     exercises = conn.cur.fetchall()
     return exercises[0][0]
 
+def get_group_type(conn, user):
+    query = GET_GROUP_TYPE_QUERY.format(user=user)
+    conn.cur.execute(query)
+    group_type = conn.cur.fetchone()
+    return group_type[0] if type(group_type) is tuple else group_type
 
 def get_n_exercises_in_past_x_days(conn, user, days, minus_time = MINUS_TIME):
     query = GET_N_EXERCISES_IN_PAST_X_DAYS.format(user=user, days=days, minus_time=minus_time)
@@ -551,7 +556,7 @@ def get_last_time_message(conn, user, e, minus_time = MINUS_TIME):
     if last_time is None:
         return BIG_DAYS
     last_time = datetime.strptime(last_time[0], DATE_FORMAT)
-    return (get_now(minus_time) - last_time).days+1
+    return (get_now(minus_time) - last_time).days
 
 
 def is_real_user(conn, user):
